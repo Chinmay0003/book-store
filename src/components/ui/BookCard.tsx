@@ -43,7 +43,7 @@ export default function BookCard({ book }: BookCardProps) {
                 }}
               >
                 <video
-                  ref={(el) => (videoRefs.current[book.id] = el)}
+                  ref={(el) => {(videoRefs.current[book.id] = el)}}
                   src={
                     book.bookMedia.find(
                       (media) => media.metadata.mime_type === "video/mp4"
