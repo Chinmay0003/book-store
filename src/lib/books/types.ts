@@ -6,19 +6,21 @@ export interface IBookMediaResponse {
     s3_key: string;
     s3_url: string;
     mime_type: string;
-  }[];
+  };
   type: "image" | "video";
 }
 
+export interface IBookData {
+  id: number;
+  name: string;
+  category: BookCategory;
+  isSold: boolean;
+  price: number;
+  quality: BookQuality;
+  type: BookType;
+  bookMedia: IBookMediaResponse[];
+};
+
 export interface IGetAllBooksResponse {
-  bookData: {
-    id: number;
-    name: string;
-    category: BookCategory;
-    isSold: boolean;
-    price: number;
-    quality: BookQuality;
-    type: BookType;
-    bookMedia: IBookMediaResponse[];
-  };
+  bookData: IBookData[];
 }
