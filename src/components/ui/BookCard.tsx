@@ -23,7 +23,9 @@ export default function BookCard({ book }: BookCardProps) {
         {/* Book Media Preview */}
         {book.bookMedia.length > 0 && (
           <div className="relative w-full h-48 mt-4 rounded-md overflow-hidden group">
-            {book.bookMedia.some((media) => media.metadata.mime_type === "video/mp4") ? (
+            {book.bookMedia.some(
+              (media) => media.metadata.mime_type === "video/mp4",
+            ) ? (
               <div
                 className="w-full h-full relative"
                 onMouseEnter={() => {
@@ -40,13 +42,14 @@ export default function BookCard({ book }: BookCardProps) {
                     video.pause();
                     video.currentTime = 0;
                   }
-                }}
-              >
+                }}>
                 <video
-                  ref={(el) => {(videoRefs.current[book.id] = el)}}
+                  ref={(el) => {
+                    videoRefs.current[book.id] = el;
+                  }}
                   src={
                     book.bookMedia.find(
-                      (media) => media.metadata.mime_type === "video/mp4"
+                      (media) => media.metadata.mime_type === "video/mp4",
                     )?.metadata.s3_url || ""
                   }
                   muted
@@ -87,16 +90,13 @@ export default function BookCard({ book }: BookCardProps) {
         {/* View Book Button */}
         <button
           onClick={() => setShowModal(true)}
-          className="mt-4 bg-black text-white px-4 py-2 rounded"
-        >
+          className="mt-4 bg-black text-white px-4 py-2 rounded">
           View Book
         </button>
       </div>
 
       {/* Book Modal */}
-      {showModal && (
-        <BookModal book={book} onClose={() => setShowModal(false)} />
-      )}
+      {showModal && <BookModal book={book} onClose={() => setShowModal(false)} />}
     </>
   );
 }

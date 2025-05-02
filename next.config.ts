@@ -5,9 +5,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'best-kid-book-media.s3.eu-north-1.amazonaws.com',
-        pathname: '**',
+        protocol: "https",
+        hostname: "best-kid-book-media.s3.eu-north-1.amazonaws.com",
+        pathname: "**",
       },
     ],
     unoptimized: true,

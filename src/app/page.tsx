@@ -74,8 +74,7 @@ export default function Home() {
             <button
               onClick={handlePrev}
               disabled={currentPage === 1}
-              className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-black text-white"}`}
-            >
+              className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-black text-white"}`}>
               Previous
             </button>
             <div className="font-semibold text-gray-700">
@@ -84,8 +83,7 @@ export default function Home() {
             <button
               onClick={handleNext}
               disabled={currentPage === totalPages}
-              className={`px-4 py-2 rounded ${currentPage === totalPages ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-black text-white"}`}
-            >
+              className={`px-4 py-2 rounded ${currentPage === totalPages ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-black text-white"}`}>
               Next
             </button>
           </div>

@@ -19,7 +19,7 @@ export interface IBookData {
   quality: BookQuality;
   type: BookType;
   bookMedia: IBookMediaResponse[];
-};
+}
 
 export interface IGetAllBooksResponse {
   bookData: IBookData[];
