@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Search } from "lucide-react"; // for search icon
 import { fetchBooks } from "@/lib/books/api"; // adjust path if needed
 import { IGetAllBooksResponse } from "@/lib/books/types"; // adjust if needed
 import BookCard from "@/components/ui/BookCard";
@@ -9,6 +10,12 @@ export default function Home() {
   const [books, setBooks] = useState<IGetAllBooksResponse["bookData"]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const booksPerPage = 20;
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const filteredBooks = books.filter((book) =>
+    book.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (selectedCategories.length === 0 || selectedCategories.includes(book.category))
+  );  
 
   useEffect(() => {
     async function loadBooks() {
@@ -21,9 +28,10 @@ export default function Home() {
 
   const indexOfLastBook = currentPage * booksPerPage;
   const indexOfFirstBook = indexOfLastBook - booksPerPage;
-  const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
+  const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
 
-  const totalPages = Math.ceil(books.length / booksPerPage);
+  const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
+  const categories = Array.from(new Set(books.map((b) => b.category)));
 
   const handleNext = () => {
     if (currentPage < totalPages) {
@@ -36,6 +44,15 @@ export default function Home() {
       setCurrentPage((prev) => prev - 1);
     }
   };
+
+  const toggleCategory = (category: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category) // remove if already selected
+        : [...prev, category] // add if not selected
+    );
+    setCurrentPage(1);
+  };  
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e4edfb] to-[#dcdff9] text-gray-800">
@@ -60,6 +77,39 @@ export default function Home() {
         <p className="text-lg text-gray-600">
           Interactive stories for young minds aged 0–12
         </p>
+
+        {/* Search bar */}
+        <div className="max-w-md mx-auto mt-10">
+          <div className="relative">
+            <Search className="absolute left-4 top-3.5 text-blue-500" size={20} />
+            <input
+              type="text"
+              placeholder="Search books by name..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-12 pr-4 py-3 rounded-xl bg-white shadow-md border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition-all duration-200 placeholder-gray-400 text-gray-800"
+            />
+          </div>
+        </div>
+              
+        <div className="flex flex-wrap justify-center gap-3 mt-6">
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => toggleCategory(category)}
+              className={`px-4 py-2 rounded-full border transition ${
+                selectedCategories.includes(category)
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
 
         {/* Books dynamically rendered */}
         <div className="mt-12 flex flex-wrap justify-center gap-6">

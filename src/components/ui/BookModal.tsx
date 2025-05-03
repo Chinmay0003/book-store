@@ -63,6 +63,7 @@ export default function BookModal({ book, onClose }: BookModalProps) {
     } catch (err) {
       console.error("❌ Payment initiation error:", err);
       alert("❌ Payment failed. Try again.");
+      setIsProcessingPayment(false);
     }
   };
 
@@ -89,6 +90,7 @@ export default function BookModal({ book, onClose }: BookModalProps) {
       modal: {
         ondismiss: function () {
           alert("❌ Payment popup closed.");
+          setIsProcessingPayment(false);
         },
       },
     };
