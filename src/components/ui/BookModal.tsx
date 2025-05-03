@@ -111,7 +111,7 @@ export default function BookModal({ book, onClose }: BookModalProps) {
         {/* Media Section */}
         <div
           className="relative w-full bg-black rounded-lg overflow-hidden mb-4"
-          style={{ aspectRatio: 3 / 4, maxHeight: "600px" }}>
+          style={{ aspectRatio: 3 / 4, maxHeight: "500px" }}> {/* Shrunk height */}
           {currentMedia.metadata.mime_type.startsWith("video") ? (
             <video
               ref={videoRef}

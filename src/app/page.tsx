@@ -96,20 +96,20 @@ export default function Home() {
         </div>
               
         <div className="flex flex-wrap justify-center gap-3 mt-6">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => toggleCategory(category)}
-              className={`px-4 py-2 rounded-full border transition ${
-                selectedCategories.includes(category)
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
+        {categories.map((category) => (
+          <button
+            key={category}
+            onClick={() => toggleCategory(category)}
+            className={`px-4 py-2 rounded-full border transition ${
+              selectedCategories.includes(category)
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+            }`}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
 
         {/* Books dynamically rendered */}
         <div className="mt-12 flex flex-wrap justify-center gap-6">
