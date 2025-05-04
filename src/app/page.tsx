@@ -63,7 +63,6 @@ export default function Home() {
         if (!res.ok) return;
 
         const userData = await res.json();
-        console.log(userData);
         setUser(userData);
       } catch (err) {
         console.error("Error fetching user", err);
