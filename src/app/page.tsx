@@ -1,7 +1,8 @@
-"use client";
+"use client"
 
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react"; // for search icon
+import Image from "next/image";
 import { fetchBooks } from "@/lib/books/api"; // adjust path if needed
 import { IGetAllBooksResponse } from "@/lib/books/types"; // adjust if needed
 import BookCard from "@/components/ui/BookCard";
@@ -16,7 +17,26 @@ export default function Home() {
     book.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (selectedCategories.length === 0 || selectedCategories.includes(book.category))
   );  
+  const [user, setUser] = useState<null | {
+    name: string;
+    email: string;
+    photoUrl?: string;
+  }>(null);
 
+  const API_BASE = "http://localhost:4000";
+
+  // ✅ Store token if returned from backend
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const token = url.searchParams.get("token");
+    if (token) {
+      localStorage.setItem("token", token);
+      url.searchParams.delete("token");
+      window.history.replaceState(null, "", url.toString());
+    }
+  }, []);
+
+  // ✅ Load books from backend
   useEffect(() => {
     async function loadBooks() {
       const booksData = await fetchBooks();
@@ -25,6 +45,43 @@ export default function Home() {
     }
     loadBooks();
   }, []);
+
+  // ✅ Fetch user data using stored token
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      console.log(token);
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) return;
+
+        const userData = await res.json();
+        console.log(userData);
+        setUser(userData);
+      } catch (err) {
+        console.error("Error fetching user", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  // ✅ Initiate Google sign-in
+  const handleSignIn = () => {
+    window.location.href = `${API_BASE}/auth/google`;
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+  };
 
   const indexOfLastBook = currentPage * booksPerPage;
   const indexOfFirstBook = indexOfLastBook - booksPerPage;
@@ -61,11 +118,37 @@ export default function Home() {
         <div className="text-2xl font-semibold text-blue-600 flex items-center gap-2">
           <span className="text-xl">📖</span> StoryTime Adventures
         </div>
-        <div className="space-x-4">
-          <button className="text-gray-600">Sign In</button>
-          <button className="bg-black text-white px-4 py-2 rounded-md">
-            Get Started
-          </button>
+        <div className="space-x-4 flex items-center gap-3">
+          {user ? (
+            <>
+              {user.photoUrl && (
+                <Image
+                  src={user.photoUrl}
+                  alt="User"
+                  width={32}
+                  height={32}
+                  className="rounded-full object-cover"
+                  // priority // optional, if user avatar is high-priority
+                />              
+              )}
+              <span className="text-gray-700 font-medium">{user.name}</span>
+              <button
+                onClick={handleSignOut}
+                className="bg-black text-white px-4 py-2 rounded-md"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={handleSignIn} className="text-gray-600">
+                Sign In
+              </button>
+              <button className="bg-black text-white px-4 py-2 rounded-md">
+                Get Started
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -96,20 +179,20 @@ export default function Home() {
         </div>
               
         <div className="flex flex-wrap justify-center gap-3 mt-6">
-        {categories.map((category) => (
-          <button
-            key={category}
-            onClick={() => toggleCategory(category)}
-            className={`px-4 py-2 rounded-full border transition ${
-              selectedCategories.includes(category)
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
-            }`}
-          >
-            {category}
-          </button>
-        ))}
-      </div>
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => toggleCategory(category)}
+              className={`px-4 py-2 rounded-full border transition ${
+                selectedCategories.includes(category)
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
 
         {/* Books dynamically rendered */}
         <div className="mt-12 flex flex-wrap justify-center gap-6">
