@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react"; // for search icon
@@ -6,6 +6,9 @@ import Image from "next/image";
 import { fetchBooks } from "@/lib/books/api"; // adjust path if needed
 import { IGetAllBooksResponse } from "@/lib/books/types"; // adjust if needed
 import BookCard from "@/components/ui/BookCard";
+import { authUser, redirectToSignin } from "@/lib/auth/api";
+import Link from "next/link";
+import { addBookToCart, fetchActiveCart, updateCartWithBooks } from "@/lib/cart/api";
 
 export default function Home() {
   const [books, setBooks] = useState<IGetAllBooksResponse["bookData"]>([]);
@@ -13,17 +16,8 @@ export default function Home() {
   const booksPerPage = 20;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const filteredBooks = books.filter((book) =>
-    book.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (selectedCategories.length === 0 || selectedCategories.includes(book.category))
-  );  
-  const [user, setUser] = useState<null | {
-    name: string;
-    email: string;
-    photoUrl?: string;
-  }>(null);
-
-  const API_BASE = "http://localhost:4000";
+  const [user, setUser] = useState<null | { name: string; email: string; photoUrl?: string }>(null);
+  const [cart, setCart] = useState<number[]>([]); // Store cart items (book IDs)
 
   // ✅ Store token if returned from backend
   useEffect(() => {
@@ -46,35 +40,31 @@ export default function Home() {
     loadBooks();
   }, []);
 
-  // ✅ Fetch user data using stored token
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndCart = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
-      console.log(token);
-
+  
       try {
-        const res = await fetch(`${API_BASE}/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) return;
-
-        const userData = await res.json();
+        const userData = await authUser(token);
         setUser(userData);
+  
+        // 👇 Fetch cart AFTER setting user
+        const cartBooks = await fetchActiveCart(token);
+        if (cartBooks) {
+          setCart(cartBooks.map(e => e.id));
+        }
       } catch (err) {
-        console.error("Error fetching user", err);
+        console.error("Error fetching user or cart", err);
       }
     };
-
-    fetchUser();
+  
+    fetchUserAndCart();
   }, []);
 
   // ✅ Initiate Google sign-in
   const handleSignIn = () => {
-    window.location.href = `${API_BASE}/auth/google`;
+    window.location.href = redirectToSignin();
   };
 
   const handleSignOut = () => {
@@ -82,11 +72,59 @@ export default function Home() {
     setUser(null);
   };
 
+  // Handle adding book to cart
+  const handleAddToCart = async (bookId: number) => {
+    setCart((prevCart) => [...prevCart, bookId]); // Add book ID to cart
+    // Now call the API to add the book to the cart in the database
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("User not authenticated");
+      return; // Handle unauthenticated users if needed
+    }
+
+    try {
+      const response = await addBookToCart(bookId, token);
+      if (response) {
+        console.log("Book added to cart successfully");
+      } else {
+        console.error("Failed to add book to cart");
+        // Optionally, remove from cart if the API call fails (to keep UI in sync)
+        setCart((prevCart) => prevCart.filter((id) => id !== bookId));
+      }
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+      // Optionally, handle any error (e.g., show a toast notification)
+    }
+  };
+
+  const handleRemoveFromCart = async (bookId: number) => {
+    // Remove the book ID from the local cart state
+    setCart((prevCart) => prevCart.filter((id) => id !== bookId));
+  
+    // Call your API to update the cart in the database
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("User not authenticated");
+      return; // Handle unauthenticated users if needed
+    }
+    try {
+      const response = await updateCartWithBooks(cart, token);
+      if (response) {
+        console.log("Book removed from cart successfully");
+      } else {
+        console.error("Failed to remove book from cart");
+      } 
+    } catch (error) {
+      console.error('Error removing book from cart:', error);
+      // Optionally: Show an error message to the user
+    }
+  };
+
   const indexOfLastBook = currentPage * booksPerPage;
   const indexOfFirstBook = indexOfLastBook - booksPerPage;
-  const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
+  const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
 
-  const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
+  const totalPages = Math.ceil(books.length / booksPerPage);
   const categories = Array.from(new Set(books.map((b) => b.category)));
 
   const handleNext = () => {
@@ -108,7 +146,7 @@ export default function Home() {
         : [...prev, category] // add if not selected
     );
     setCurrentPage(1);
-  };  
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e4edfb] to-[#dcdff9] text-gray-800">
@@ -117,6 +155,14 @@ export default function Home() {
         <div className="text-2xl font-semibold text-blue-600 flex items-center gap-2">
           <span className="text-xl">📖</span> StoryTime Adventures
         </div>
+        <Link
+          href="/cart"
+          className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition shadow-sm"
+        >
+          🛒 <span>Cart ({cart.length})</span>
+        </Link>
+
+
         <div className="space-x-4 flex items-center gap-3">
           {user ? (
             <>
@@ -128,7 +174,7 @@ export default function Home() {
                   height={32}
                   className="rounded-full object-cover"
                   // priority // optional, if user avatar is high-priority
-                />              
+                />
               )}
               <span className="text-gray-700 font-medium">{user.name}</span>
               <button
@@ -196,7 +242,7 @@ export default function Home() {
         {/* Books dynamically rendered */}
         <div className="mt-12 flex flex-wrap justify-center gap-6">
           {currentBooks.map((book) => (
-            <BookCard key={book.id} book={book} />
+            <BookCard key={book.id} book={book} onAddToCart={handleAddToCart} cart={cart} handleRemoveFromCart={handleRemoveFromCart}/>
           ))}
         </div>
 
@@ -233,4 +279,4 @@ export default function Home() {
       </footer>
     </div>
   );
-}
+};

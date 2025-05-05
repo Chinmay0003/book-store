@@ -7,9 +7,12 @@ import { IBookData } from "@/lib/books/types";
 
 interface BookCardProps {
   book: IBookData;
+  cart: number[];
+  onAddToCart?: (bookId: number) => void; // Add to Cart callback
+  handleRemoveFromCart?: (bookId: number) => void; // Add to Cart callback
 }
 
-export default function BookCard({ book }: BookCardProps) {
+export default function BookCard({ book, onAddToCart, cart, handleRemoveFromCart }: BookCardProps) {
   const [showModal, setShowModal] = useState(false);
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
 
@@ -87,12 +90,37 @@ export default function BookCard({ book }: BookCardProps) {
         </p>
         <p className="text-sm text-gray-700 mt-1">₹{book.price.toFixed(2)}</p>
 
-        {/* View Book Button */}
-        <button
-          onClick={() => setShowModal(true)}
-          className="mt-4 bg-black text-white px-4 py-2 rounded">
-          View Book
-        </button>
+        {/* Button Container */}
+        <div className="flex flex-col gap-2 mt-4">
+          {/* View Book Button */}
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-black text-white px-4 py-2 rounded"
+          >
+            View Book
+          </button>
+
+          {/* Add to Cart / Remove from Cart Button */}
+          {onAddToCart && handleRemoveFromCart && (
+            <button
+              onClick={() => {
+                if (cart.includes(book.id)) {
+                  // If the book is already in the cart, remove it
+                  handleRemoveFromCart(book.id);
+                } else {
+                  // If the book is not in the cart, add it
+                  onAddToCart(book.id);
+                }
+              }}
+              className={`${
+                cart.includes(book.id) ? 'bg-red-600' : 'bg-blue-600'
+              } text-white px-4 py-2 rounded`}
+            >
+              {cart.includes(book.id) ? 'Remove from Cart' : 'Add to Cart'}
+            </button>
+          )}
+        </div>
+
       </div>
 
       {/* Book Modal */}

@@ -10,9 +10,10 @@ import { PaymentInitiationResponse, RazorpayOptions } from "@/lib/payments/types
 interface BookModalProps {
   book: IBookData;
   onClose: () => void;
+  hideBuyNow?: boolean;
 }
 
-export default function BookModal({ book, onClose }: BookModalProps) {
+export default function BookModal({ book, onClose, hideBuyNow }: BookModalProps) {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -173,16 +174,20 @@ export default function BookModal({ book, onClose }: BookModalProps) {
         </div>
 
         {/* Buy Button */}
-        <button
-          className={`w-full py-3 rounded-lg text-lg mt-6 transition ${
-            isProcessingPayment
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-black hover:bg-gray-800 text-white"
-          }`}
-          onClick={handleBuyNow}
-          disabled={isProcessingPayment}>
-          {isProcessingPayment ? "Processing..." : "Buy Now"}
-        </button>
+        {!hideBuyNow && (
+          <button
+            className={`w-full py-3 rounded-lg text-lg mt-6 transition ${
+              isProcessingPayment
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-black hover:bg-gray-800 text-white"
+            }`}
+            onClick={handleBuyNow}
+            disabled={isProcessingPayment}
+          >
+            {isProcessingPayment ? "Processing..." : "Buy Now"}
+          </button>
+        )}
+
       </div>
 
       {/* ✅ Payment Success Modal */}
