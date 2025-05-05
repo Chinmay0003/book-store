@@ -42,6 +42,7 @@ export default function CartPage() {
   const handleSignOut = () => {
     localStorage.removeItem("token");
     setUser(null);
+		window.location.reload();
   };
 
   const totalCost = cartBooks.reduce((sum, book) => sum + (book.price || 0), 0);
