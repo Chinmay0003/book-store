@@ -1,4 +1,4 @@
 export enum ICartStatusEnum {
-    ACTIVE = "ACTIVE",
-    BOUGHT = "BOUGHT",
+  ACTIVE = "ACTIVE",
+  BOUGHT = "BOUGHT",
 }

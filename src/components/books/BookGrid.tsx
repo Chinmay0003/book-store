@@ -72,7 +72,9 @@ export default function BookGrid({ books, cart }: BookGridProps) {
   };
 
   return (
-    <section id="book-collection" className="relative mt-30 px-2 py-10 bg-gray-50 w-full mx-auto flex flex-col items-center text-center">
+    <section
+      id="book-collection"
+      className="relative mt-30 px-2 py-10 bg-gray-50 w-full mx-auto flex flex-col items-center text-center">
       <h2 className="text-3xl font-bold text-center mb-10 text-gray-800 tracking-tight drop-shadow-sm">
         Our Premium Book Collection
       </h2>
