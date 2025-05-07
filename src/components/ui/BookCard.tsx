@@ -1,130 +1,100 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import BookModal from "@/components/ui/BookModal";
 import { IBookData } from "@/lib/books/types";
+import { Eye, ShoppingCart, XCircle, BookOpen, IndianRupee } from "lucide-react";
+import { useBookStore } from "@/lib/books/bookStore";
 
 interface BookCardProps {
   book: IBookData;
   cart: number[];
-  onAddToCart?: (bookId: number) => void; // Add to Cart callback
-  handleRemoveFromCart?: (bookId: number) => void; // Add to Cart callback
+  onAddToCart?: (bookId: number) => void;
+  handleRemoveFromCart?: (bookId: number) => void;
 }
 
-export default function BookCard({ book, onAddToCart, cart, handleRemoveFromCart }: BookCardProps) {
-  const [showModal, setShowModal] = useState(false);
+export default function BookCard({ book, cart }: BookCardProps) {
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
+  const router = useRouter();
 
   return (
     <>
-      <div className="bg-white p-6 rounded-lg w-72 shadow hover:scale-105 transition-transform duration-200">
-        {/* Book Name & Category */}
-        <h2 className="text-lg font-bold">{book.name}</h2>
-        <p className="text-blue-600 font-medium capitalize">{book.category}</p>
-
-        {/* Book Media Preview */}
-        {book.bookMedia.length > 0 && (
-          <div className="relative w-full h-48 mt-4 rounded-md overflow-hidden group">
-            {book.bookMedia.some(
-              (media) => media.metadata.mime_type === "video/mp4",
-            ) ? (
-              <div
-                className="w-full h-full relative"
-                onMouseEnter={() => {
-                  const video = videoRefs.current[book.id];
-                  if (video) {
-                    video.muted = true;
-                    video.playbackRate = 2;
-                    video.play().catch((err) => console.log("Play error", err));
-                  }
+      <div className="bg-white border border-blue-100 rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 flex flex-col items-center p-0 mx-auto min-h-[370px] max-w-xs hover:scale-105 overflow-hidden">
+        {/* Clickable Preview */}
+        <div
+          className="relative w-full h-60 group cursor-pointer"
+          onClick={() => {
+            useBookStore.getState().setSelectedBook(book);
+            router.push(`/checkout`);
+          }}
+          onMouseEnter={() => {
+            const video = videoRefs.current[book.id];
+            if (video) {
+              video.muted = true;
+              video.playbackRate = 2;
+              video.play().catch(() => {});
+            }
+          }}
+          onMouseLeave={() => {
+            const video = videoRefs.current[book.id];
+            if (video) {
+              video.pause();
+              video.currentTime = 0;
+            }
+          }}>
+          {book.bookMedia.some(
+            (media) => media?.metadata?.mime_type === "video/mp4",
+          ) ? (
+            <>
+              <video
+                ref={(el) => {
+                  videoRefs.current[book.id] = el;
                 }}
-                onMouseLeave={() => {
-                  const video = videoRefs.current[book.id];
-                  if (video) {
-                    video.pause();
-                    video.currentTime = 0;
-                  }
-                }}>
-                <video
-                  ref={(el) => {
-                    videoRefs.current[book.id] = el;
-                  }}
-                  src={
-                    book.bookMedia.find(
-                      (media) => media.metadata.mime_type === "video/mp4",
-                    )?.metadata.s3_url || ""
-                  }
-                  muted
-                  loop
-                  playsInline
-                  className="object-cover w-full h-full rounded-md absolute top-0 left-0"
-                />
-                <Image
-                  src={book.bookMedia[0].metadata.s3_url}
-                  alt={book.name}
-                  fill
-                  className="object-cover transition-opacity duration-300 group-hover:opacity-0"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  priority={true}
-                />
-              </div>
-            ) : (
-              <div className="relative w-full h-full">
-                <Image
-                  src={book.bookMedia[0].metadata.s3_url}
-                  alt={book.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  priority={true}
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Book Details */}
-        <p className="text-sm text-gray-700 mt-2">
-          {book.type} - {book.quality} quality
-        </p>
-        <p className="text-sm text-gray-700 mt-1">₹{book.price.toFixed(2)}</p>
-
-        {/* Button Container */}
-        <div className="flex flex-col gap-2 mt-4">
-          {/* View Book Button */}
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-black text-white px-4 py-2 rounded"
-          >
-            View Book
-          </button>
-
-          {/* Add to Cart / Remove from Cart Button */}
-          {onAddToCart && handleRemoveFromCart && (
-            <button
-              onClick={() => {
-                if (cart.includes(book.id)) {
-                  // If the book is already in the cart, remove it
-                  handleRemoveFromCart(book.id);
-                } else {
-                  // If the book is not in the cart, add it
-                  onAddToCart(book.id);
+                src={
+                  book.bookMedia.find(
+                    (media) => media?.metadata?.mime_type === "video/mp4",
+                  )?.metadata?.s3_url || ""
                 }
-              }}
-              className={`${
-                cart.includes(book.id) ? 'bg-red-600' : 'bg-blue-600'
-              } text-white px-4 py-2 rounded`}
-            >
-              {cart.includes(book.id) ? 'Remove from Cart' : 'Add to Cart'}
-            </button>
+                muted
+                loop
+                playsInline
+                className="absolute w-full h-full object-cover rounded-t-xl"
+              />
+              <Image
+                src={book.bookMedia[0]?.metadata?.s3_url || ""}
+                alt={book.name}
+                fill
+                className="object-cover transition-opacity duration-300 group-hover:opacity-0 rounded-t-xl"
+                sizes="(max-width: 768px) 100vw, 33vw"
+                priority
+              />
+            </>
+          ) : (
+            <Image
+              src={book.bookMedia[0]?.metadata?.s3_url || ""}
+              alt={book.name}
+              fill
+              className="object-cover rounded-t-xl"
+              sizes="(max-width: 768px) 100vw, 33vw"
+              priority
+            />
           )}
         </div>
 
-      </div>
+        {/* Book Info */}
+        <div className="flex flex-col items-center gap-3 w-full mb-4 px-4 mt-4">
+          <div className="flex items-center gap-2 w-full">
+            <BookOpen className="w-5 h-5 text-blue-600" />
+            <h2 className="text-lg text-[#22223b] truncate">{book.name}</h2>
+          </div>
 
-      {/* Book Modal */}
-      {showModal && <BookModal book={book} onClose={() => setShowModal(false)} />}
+          <div className="flex items-center gap-2 w-full">
+            <IndianRupee className="w-5 h-5 text-green-600" />
+            <p className="text-xl font-bold text-[#22223b]">{book.price.toFixed(2)}</p>
+          </div>
+        </div>
+      </div>
     </>
   );
 }
