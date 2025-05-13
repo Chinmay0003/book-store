@@ -16,6 +16,7 @@ import { PaymentInitiationResponse, RazorpayOptions } from "@/lib/payments/types
 import Link from "next/link";
 import toast from "react-hot-toast";
 import PaymentSuccessModal from "../../components/ui/PaymentSuccessfulModal";
+import { IAddressCountryEnum } from "@/lib/cart/enums";
 const Index = () => {
   const [discountCode, setDiscountCode] = useState("");
   const [userAddress, setUserAddress] = useState<IGetAllUserAddressResponse | null>(
@@ -182,6 +183,7 @@ const Index = () => {
     );
     handleBuyNow(readyToCheckout.map((book) => book.id));
   };
+  const countries = Object.values(IAddressCountryEnum);
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden text-sm text-[#22223b]">
       {/* Animated background elements */}
@@ -233,7 +235,6 @@ const Index = () => {
                               </div>
                             )}
                             <div>
-                              <p className="font-semibold text-gray-900">US Branch</p>
                               <p className="text-gray-700">
                                 {address.firstName} {address.lastName}
                               </p>
@@ -258,7 +259,6 @@ const Index = () => {
                 <button
                   onClick={() => setShowNewAddressForm(true)}
                   className="w-full mt-4 flex items-center justify-center gap-2 border-2 border-dashed border-blue-400 text-blue-500 rounded-lg p-4 hover:bg-blue-50 transition">
-                  <Gift className="w-5 h-5" />
                   <span className="font-medium">Add New Address</span>
                 </button>
                 {showNewAddressForm && (
@@ -328,11 +328,11 @@ const Index = () => {
                             className="w-full p-3 rounded-lg border-2 border-slate-200"
                             placeholder="State"
                           />
-                          <input
-                            {...register("country")}
-                            className="w-full p-3 rounded-lg border-2 border-slate-200"
-                            placeholder="Country"
-                          />
+                          <select {...register("country")} className="w-full p-3 pr-10 rounded-lg border-2 border-slate-200 appearance-none bg-white">
+                            {countries.map(country => (
+                              <option key={country} value={country}>{country}</option>
+                            ))}
+                          </select>
                         </div>
 
                         <input

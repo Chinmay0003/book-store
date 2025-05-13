@@ -1,3 +1,5 @@
+import { IAddressCountryEnum } from "@/lib/cart/enums";
+
 export interface IAddressData {
   id: number;
   createdAt: string;
@@ -18,7 +20,7 @@ export interface IGetAllUserAddressResponse {
 export interface IAddAddressRequest {
   firstName: string;
   lastName: string;
-  country: string;
+  country: IAddressCountryEnum;
   streetAddress: string;
   city: string;
   state: string;
