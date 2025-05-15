@@ -309,20 +309,6 @@ const ProductPage = () => {
             {/* Accordions */}
             <div className="border-t border-gray-200 text-[#22223b] mt-4 pt-4">
               <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="description">
-                  <AccordionTrigger className="py-4 flex items-center gap-3 hover:text-[#22223b] transition-colors">
-                    <BookOpen className="h-5 w-5 text-gray-600" />
-                    <span className="text-lg">Description</span>
-                    <ChevronDown className="h-5 w-5 ml-auto transition-transform" />
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <p className="text-gray-600 text-sm pl-8 pr-4 pb-4">
-                      "This beautifully crafted book features premium materials and
-                      thoughtful design. With its durable cover and high-quality pages,
-                      it's built to last through countless readings and adventures."
-                    </p>
-                  </AccordionContent>
-                </AccordionItem>
 
                 <AccordionItem value="shipping">
                   <AccordionTrigger className="py-4 flex items-center gap-3 hover:text-[#22223b] transition-colors">
@@ -334,51 +320,25 @@ const ProductPage = () => {
                     <ul className="text-gray-600 space-y-2 text-sm pl-8 pr-4 pb-4">
                       <li className="flex items-center gap-2">
                         <span className="w-2 h-2 bg-gray-400 rounded-full" />
-                        Free standard shipping on orders over Rs.500
+                        Enjoy free standard shipping on all orders over ₹599.
                       </li>
                       <li className="flex items-center gap-2">
                         <span className="w-2 h-2 bg-gray-400 rounded-full" />
-                        Express shipping available
+                        Orders are shipped within 7 days of purchase.
                       </li>
                       <li className="flex items-center gap-2">
                         <span className="w-2 h-2 bg-gray-400 rounded-full" />
-                        30-day return policy
+                        A flat delivery fee of ₹100 applies to all orders below ₹599, across all regions.
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-gray-400 rounded-full" />
+                        We offer a 7-day return policy for your convenience.
                       </li>
                     </ul>
                   </AccordionContent>
+
                 </AccordionItem>
 
-                <AccordionItem value="details">
-                  <AccordionTrigger className="py-4 flex items-center gap-3 hover:text-[#22223b] transition-colors">
-                    <Info className="h-5 w-5 text-gray-600" />
-                    <span className="text-lg">Details</span>
-                    <ChevronDown className="h-5 w-5 ml-auto transition-transform" />
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <ul className="text-gray-600 space-y-2 text-sm pl-8 pr-4 pb-4">
-                      <li className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-gray-400 rounded-full" />
-                        Published: {new Date().toLocaleDateString()}
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-gray-400 rounded-full" />
-                        ISBN: "978-3-16-148410-0"
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-gray-400 rounded-full" />
-                        Published: {new Date().toLocaleDateString()}
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-gray-400 rounded-full" />
-                        ISBN: "978-3-16-148410-0"
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-gray-400 rounded-full" />
-                        Pages: 320
-                      </li>
-                    </ul>
-                  </AccordionContent>
-                </AccordionItem>
               </Accordion>
             </div>
           </div>

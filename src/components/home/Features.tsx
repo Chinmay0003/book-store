@@ -91,53 +91,23 @@ export default function Features() {
           <div className="absolute bottom-0 right-1/2 translate-x-1/2 w-[70vw] h-40 bg-blue-50/30 rounded-full blur-2xl" />
         </div>
         <div className="max-w-5xl mx-auto px-6 relative z-10">
-          <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-12 text-center tracking-tight">
+          <h3 className="text-3xl md:text-4xl font-bold text-[#23395d] mb-12 text-center tracking-tight">
             What Our Customers Say
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {reviews.map((review, idx) => (
               <div
                 key={idx}
-                className="bg-white border border-blue-100 rounded-xl shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)] p-8 flex flex-col items-center text-center hover:scale-105 transition-transform duration-300 fade-in-up">
-                <div className="relative mb-4">
-                  <img
-                    src={review.avatar}
-                    alt={review.name}
-                    className="w-16 h-16 rounded-full border-4 border-blue-100 shadow object-cover"
-                  />
-                  <span className="absolute -top-3 -right-3 bg-blue-400 text-white rounded-full px-2 py-1 text-xs font-bold shadow">
-                    {review.role}
-                  </span>
+                className="bg-blue-50/30 backdrop-blur-sm border border-blue-100 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300 hover:scale-[1.03] flex flex-col justify-between text-left"
+              >
+                <div className="text-blue-400 text-4xl mb-4">“</div>
+                <p className="text-gray-700 text-base md:text-lg font-medium italic mb-6">
+                  {review.text}
+                </p>
+                <div className="border-t pt-4 mt-auto">
+                  <div className="text-[#23395d] font-semibold text-lg">{review.name}</div>
+                  <div className="text-sm text-blue-500 font-medium">{review.role}</div>
                 </div>
-                <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <svg
-                      key={i}
-                      className={`w-5 h-5 ${
-                        i < review.rating ? "text-blue-400" : "text-gray-300"
-                      }`}
-                      fill="currentColor"
-                      viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.454a1 1 0 00-1.175 0l-3.38 2.454c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.05 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.967z" />
-                    </svg>
-                  ))}
-                </div>
-                <div className="mb-4">
-                  <svg
-                    className="w-7 h-7 text-blue-300 mx-auto mb-2"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 13h6m2 0a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v4a2 2 0 002 2zm0 0v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2"
-                    />
-                  </svg>
-                  <p className="text-gray-600 font-medium italic">{review.text}</p>
-                </div>
-                <div className="font-semibold text-gray-800 text-lg">{review.name}</div>
               </div>
             ))}
           </div>
