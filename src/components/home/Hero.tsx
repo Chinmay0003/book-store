@@ -1,9 +1,12 @@
+import Image from "next/image";
 import { User } from "@/types/user";
 import { ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import userImg from "../../../public/bookImg.jpg";
 import { useCartStore } from "@/lib/books/bookStore";
+import logoImage from "@/assets/logo.jpg";
+import { motion } from "framer-motion";
 
 export default function Hero({
   userInfo,
@@ -20,56 +23,12 @@ export default function Hero({
   const cart = useCartStore((state) => state.cart);
 
   return (
-    <section className="w-full bg-white pb-16 px-4">
+    <section className="w-full bg-white pb-4 px-0">
       {/* Navigation Bar */}
       <nav className="max-w-8xl mx-auto flex items-center justify-between py-8 px-5 relative text-black">
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <span className="inline-block bg-[#23395d] rounded-md p-2">
-            <svg
-              width="40"
-              height="40"
-              viewBox="0 0 48 48"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-white">
-              <rect
-                x="8"
-                y="8"
-                width="14"
-                height="32"
-                rx="2"
-                fill="#23395d"
-                stroke="#fff"
-              />
-              <rect
-                x="26"
-                y="8"
-                width="14"
-                height="32"
-                rx="2"
-                fill="#FFD93D"
-                stroke="#fff"
-              />
-              <path d="M22 12H26" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-              <path d="M22 36H26" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-              <path d="M15 16h4" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-              <path d="M15 32h4" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-              <path
-                d="M29 16h4"
-                stroke="#23395d"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <path
-                d="M29 32h4"
-                stroke="#23395d"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </span>
+          <Image src="/favicon.ico" alt="Mybestkid Logo" width={40} height={40} />
           <span className="text-3xl font-bold text-[#23395d]">Mybestkid</span>
         </div>
         {/* Hamburger Icon for mobile */}
@@ -154,6 +113,7 @@ export default function Hero({
                 </svg>
                 HOME
               </a>
+              <a href="/contact" className="border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">Contact Us</a>
               <a
                 onClick={handleSign}
                 className="flex items-center gap-2 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
@@ -248,6 +208,7 @@ export default function Hero({
                   </svg>
                   HOME
                 </a>
+                <a href="/contact" className="mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">Contact Us</a>
                 <a
                   onClick={() => {
                     setMobileNavOpen(false);
@@ -282,52 +243,65 @@ export default function Hero({
         )}
       </nav>
       {/* Hero Main Content */}
-      <div className="max-w-6xl mt-10 py-5 mx-auto flex flex-col md:flex-row items-center justify-between gap-10 ">
-        {/* Left: Text Content */}
-        <div className="flex-1 text-center md:text-left">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#22223b] mb-4">
-            StoryTime Adventures
-          </h1>
-          <h2 className="text-2xl text-[#4a4e69] mb-4 font-medium">
-            Discover the Magic of Reading
-          </h2>
-          <p className="text-base md:text-lg text-[#22223b] mb-8 max-w-xl">
-            Mybestkid makes reading fun and safe for every child. Discover, enjoy, and
-            share the best books—curated for curious young minds and caring families.
-          </p>
-          <button
-            className="bg-[#23395d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#1a253a] transition"
-            onClick={() => {
-              const section = document.getElementById("book-collection");
-              if (section) {
-                section.scrollIntoView({ behavior: "smooth" });
-              }
-            }}>
-            Buy now
-          </button>
+      <motion.div
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="w-full py-2"
+      >
+        <div className="text-center text-2xl md:text-6xl font-bold tracking-wide bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+          #NoScreenTime
         </div>
-        {/* Right: SVG Illustration */}
-        <div className="flex-1 flex justify-center md:justify-end">
-          {/* Random SVG illustration */}
-          <svg
-            width="320"
-            height="260"
-            viewBox="0 0 320 260"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg">
-            <rect x="60" y="40" width="200" height="160" rx="24" fill="#f3f4f6" />
-            <rect x="90" y="70" width="140" height="20" rx="6" fill="#c7d2fe" />
-            <rect x="90" y="100" width="100" height="16" rx="5" fill="#a5b4fc" />
-            <rect x="90" y="130" width="120" height="16" rx="5" fill="#a5b4fc" />
-            <rect x="90" y="160" width="80" height="16" rx="5" fill="#a5b4fc" />
-            <ellipse cx="250" cy="210" rx="30" ry="8" fill="#e0e7ef" />
-            <ellipse cx="110" cy="210" rx="30" ry="8" fill="#e0e7ef" />
-            <circle cx="220" cy="120" r="18" fill="#fbbf24" />
-            <rect x="200" y="150" width="40" height="12" rx="4" fill="#f87171" />
-            <rect x="120" y="180" width="80" height="8" rx="3" fill="#c7d2fe" />
-          </svg>
+      </motion.div>
+
+
+      {/* Banner Section */}
+      <motion.div
+        initial={{ x: -100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="mx-auto mt-4 max-w-screen-md rounded-2xl bg-gradient-to-r from-yellow-300 to-yellow-400 shadow-md px-6 py-3 text-center"
+      >
+        <p className="text-[#22223b] text-base md:text-3xl font-semibold tracking-wide">
+          🎉 FREE DELIVERY for Orders Above ₹599!
+        </p>
+      </motion.div>
+
+
+      
+      {/* Hero Section */}
+      <div className="relative max-w-7xl mx-auto px-4 py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          {/* Left - Text */}
+          <div className="text-center md:text-left">
+            <h2 className="text-3xl md:text-5xl font-bold text-[#23395d] mb-6 leading-tight">
+              Mybestkid makes reading fun and safe for every child.
+            </h2>
+            <p className="text-md md:text-lg text-[#22223b] max-w-xl mx-auto md:mx-0">
+              Discover, enjoy, and share the best books—curated for curious young minds and caring families.
+            </p>
+          </div>
+
+          {/* Right - Image */}
+          <div className="flex justify-center md:justify-end">
+            <div className="w-72 md:w-[400px]">
+              <Image
+                src={logoImage}
+                alt="Books background"
+                width={400}
+                height={400}
+                className="w-full h-auto object-contain"
+                priority
+              />
+            </div>
+          </div>
         </div>
       </div>
+
+
+
+
+
     </section>
   );
 }
