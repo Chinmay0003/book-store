@@ -9,7 +9,6 @@ interface BookGridProps {
 }
 
 function getPaginationDots(current: number, total: number) {
-  // Show max 5 dots: [1, ..., current-1, current, current+1, ..., total]
   if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
   if (current <= 3) return [1, 2, 3, "...", total];
   if (current >= total - 2) return [1, "...", total - 2, total - 1, total];
@@ -19,29 +18,23 @@ function getPaginationDots(current: number, total: number) {
 export default function BookGrid({ books, cart }: BookGridProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<string>("Playful");
-  const booksPerPage = 8; // Changed to 8 books per page (2 rows of 4)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const booksPerPage = 8;
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  // Filter books based on active category
-  const filteredBooks = books.filter((book) => book.category === activeFilter);
-  const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
+  const filteredBooks = books.filter((book) =>
+    book.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  const indexOfLastBook = currentPage * booksPerPage;
-  const indexOfFirstBook = indexOfLastBook - booksPerPage;
-  const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
-
-  // Reset to first page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeFilter]);
+  }, [searchQuery]);
 
   const handlePageChange = (direction: "next" | "prev") => {
     if (isAnimating) return;
-
     setIsAnimating(true);
     const newPage = direction === "next" ? currentPage + 1 : currentPage - 1;
-
     if (carouselRef.current) {
       const scrollAmount = carouselRef.current.offsetWidth;
       carouselRef.current.scrollBy({
@@ -49,26 +42,8 @@ export default function BookGrid({ books, cart }: BookGridProps) {
         behavior: "smooth",
       });
     }
-
     setCurrentPage(newPage);
-
-    // Reset animation state after transition
-    setTimeout(() => {
-      setIsAnimating(false);
-    }, 500);
-  };
-
-  const handleDotClick = (page: number) => {
-    if (!isAnimating && typeof page === "number") {
-      setCurrentPage(page);
-      if (carouselRef.current) {
-        const scrollAmount = carouselRef.current.offsetWidth * (page - 1);
-        carouselRef.current.scrollTo({
-          left: scrollAmount,
-          behavior: "smooth",
-        });
-      }
-    }
+    setTimeout(() => setIsAnimating(false), 500);
   };
 
   return (
@@ -78,26 +53,99 @@ export default function BookGrid({ books, cart }: BookGridProps) {
       <h2 className="text-3xl font-bold text-center mb-10 text-gray-800 tracking-tight drop-shadow-sm">
         Our Premium Book Collection
       </h2>
-      <div className="flex gap-4 mb-8">
-        {["Playful", "Toddler", "School Going"].map((label) => (
+
+      {/* Search Bar */}
+      <div className="relative w-full max-w-xl mb-8">
+        {/* Search Icon */}
+        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
+            />
+          </svg>
+        </div>
+
+        {/* Search Input */}
+        <input
+          type="text"
+          placeholder="Search or type a book name..."
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setShowDropdown(true);
+          }}
+          onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+          className="w-full pl-12 pr-12 py-3 rounded-full shadow-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-lg"
+        />
+
+        {/* Clear Button */}
+        {searchQuery && (
           <button
-            key={label}
-            onClick={() => setActiveFilter(label)}
-            className={`px-6 py-2 rounded-full font-semibold shadow-sm border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-black
-              ${
-                activeFilter === label
-                  ? "bg-black text-white border-black"
-                  : "bg-white text-black border-black hover:bg-black hover:text-white"
-              }
-            `}>
-            {label}
+            onClick={() => setSearchQuery("")}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-all duration-200 group"
+          >
+            <div className="absolute -inset-1 rounded-full bg-gray-100 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+              className="w-5 h-5 relative z-10"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
           </button>
-        ))}
+        )}
+
+        {/* Dropdown */}
+        {showDropdown && searchQuery.trim() !== "" && (
+          <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-md max-h-64 overflow-y-auto">
+            {filteredBooks.map((book, index) => (
+              <div key={book.id}>
+                <div
+                  className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150"
+                >
+                  {book.bookMedia.length > 0 ? (
+                    <img
+                      src={book.bookMedia[0].metadata.s3_url}
+                      alt={book.name}
+                      className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-md bg-gray-100 border border-gray-200"></div>
+                  )}
+                  <span>{book.name}</span>
+                </div>
+                {index < filteredBooks.length - 1 && (
+                  <hr className="mx-4 border-t border-gray-200" />
+                )}
+              </div>
+            ))}
+            {filteredBooks.length === 0 && (
+              <div className="px-4 py-3 text-gray-500">No matching books found</div>
+            )}
+          </div>
+        )}
       </div>
+
+
 
       <div className="relative w-full flex flex-col items-center">
         <div className="flex items-center justify-center max-w-12xl">
-          {/* Left Navigation Button */}
           <button
             onClick={() => handlePageChange("prev")}
             disabled={currentPage === 1 || isAnimating}
@@ -108,68 +156,28 @@ export default function BookGrid({ books, cart }: BookGridProps) {
             <ChevronLeftIcon className="w-5 h-5 md:w-6 md:h-6" />
           </button>
 
-          {/* Grid Container */}
           <div
             ref={carouselRef}
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full py-2 px-2 md:px-8"
             style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
-            {currentBooks.map((book) => (
-              <div
-                key={book.id}
-                className="transform transition-all duration-300 hover:scale-105"
-                style={{ minWidth: "260px", maxWidth: "280px" }}>
-                <div className="bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)]">
-                  <BookCard book={book} cart={cart} />
-                </div>
+            {books.slice((currentPage - 1) * booksPerPage, currentPage * booksPerPage).map((book) => (
+              <div key={book.id} className="transform transition-all duration-300 hover:scale-105">
+                <BookCard book={book} cart={cart} />
               </div>
             ))}
           </div>
 
-          {/* Right Navigation Button */}
           <button
             onClick={() => handlePageChange("next")}
-            disabled={currentPage === totalPages || isAnimating}
+            disabled={currentPage === Math.ceil(books.length / booksPerPage) || isAnimating}
             className={`p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
-              currentPage === totalPages || isAnimating
-                ? "opacity-50 cursor-not-allowed"
-                : ""
+              currentPage === Math.ceil(books.length / booksPerPage) || isAnimating ? "opacity-50 cursor-not-allowed" : ""
             }`}
             aria-label="Next page">
             <ChevronRightIcon className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </div>
       </div>
-
-      {/* Pagination Indicator */}
-      <div className="flex items-center justify-center mt-8 space-x-2">
-        {getPaginationDots(currentPage, totalPages).map((dot, idx) =>
-          dot === "..." ? (
-            <span key={"ellipsis-" + idx} className="w-4 text-center text-gray-400">
-              …
-            </span>
-          ) : (
-            <button
-              key={"dot-" + idx}
-              onClick={() => handleDotClick(dot as number)}
-              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
-                currentPage === dot
-                  ? "bg-blue-600 scale-125"
-                  : "bg-gray-300 hover:bg-gray-400"
-              }`}
-              aria-label={`Go to page ${dot}`}
-            />
-          ),
-        )}
-      </div>
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .custom-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </section>
   );
 }

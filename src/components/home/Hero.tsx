@@ -163,6 +163,7 @@ export default function Hero({
                   <ShoppingCart className="h-5 w-5 text-[#22223b]" />
                   Cart ({cart?.length || 0})
                 </button>
+                <a href="/contact" className="mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">Contact Us</a>
                 <button
                   onClick={() => {
                     setMobileNavOpen(false);
