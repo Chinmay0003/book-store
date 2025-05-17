@@ -18,9 +18,24 @@ export default function BookCard({ book, cart }: BookCardProps) {
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const router = useRouter();
 
+  // Check if book is updated within last 7 days
+  const isNew = (() => {
+    if (!book.updatedAt) return false;
+    const updatedAt = new Date(book.updatedAt);
+    const now = new Date();
+    const diffDays = (now.getTime() - updatedAt.getTime()) / (1000 * 60 * 60 * 24);
+    return diffDays <= 7;
+  })();
+
   return (
     <>
-      <div className="bg-white border border-blue-100 rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 flex flex-col items-center p-0 mx-auto min-h-[370px] max-w-xs hover:scale-105 overflow-hidden">
+      <div className="bg-white border border-blue-100 rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 flex flex-col items-center p-0 mx-auto min-h-[370px] max-w-xs hover:scale-105 overflow-hidden relative">
+        {/* New Badge */}
+        {isNew && (
+          <div className="absolute top-2 right-2 z-20 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded shadow-lg">
+            NEW
+          </div>
+        )}
         {/* Clickable Preview */}
         <div
           className="relative w-full h-60 group cursor-pointer"

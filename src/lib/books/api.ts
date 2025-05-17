@@ -5,6 +5,7 @@ import { BACKEND_API } from "@/lib/constants";
 export const fetchBooks = async () => {
   try {
     const res = await axios.get<IGetAllBooksResponse>(`${BACKEND_API}/book`);
+    console.log("✅ Books fetched successfully:", res.data);
     return res.data;
   } catch (error) {
     console.error("❌ Error fetching books:");

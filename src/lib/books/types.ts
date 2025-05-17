@@ -20,6 +20,7 @@ export interface IBookData {
   quality: BookQuality;
   type: BookType;
   bookMedia: IBookMediaResponse[];
+  updatedAt: string;
 }
 
 export interface IGetAllBooksResponse {
