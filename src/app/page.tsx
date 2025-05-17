@@ -18,9 +18,10 @@ export default function Home() {
   const { books, setBooks } = useBookStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [user, setUser] = useState<User | null>(null);
-  const { cart, setCart } = useCartStore();
+  const { cart, setCart, initializeCart } = useCartStore();
   const [isLoading, setIsLoading] = useState(true);
 
+  // Handle token in URL for initial login
   useEffect(() => {
     const url = new URL(window.location.href);
     const token = url.searchParams.get("token");
@@ -31,8 +32,9 @@ export default function Home() {
     }
   }, []);
 
+  // Load books on initial mount
   useEffect(() => {
-    async function loadBooks() {
+    const loadBooks = async () => {
       if (books.length > 0) {
         setIsLoading(false);
         return;
@@ -45,56 +47,48 @@ export default function Home() {
       } catch (error) {
         console.error("Error loading books:", error);
       } finally {
+        setIsLoading(false);
       }
-    }
+    };
+
     loadBooks();
   }, [books, setBooks]);
 
   useEffect(() => {
-    const fetchUserAndCart = async () => {
+    const initializeUserAndCart = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
-
+  
       try {
         console.log("Fetching user and cart...", token);
         const userData = await authUser(token);
         setUser(userData);
         console.log("User data:", userData);
-
+  
+        // Always replace cart with server cart — do NOT merge to avoid duplicates
         const cartBooks = await fetchActiveCart(token);
         if (cartBooks) {
           const updatedCart = cartBooks
             .filter((book) => book.isSold === false)
             .map((book) => book.id);
           setCart(updatedCart);
+        } else {
+          setCart([]);
         }
       } catch (err) {
         console.error("Error fetching user or cart", err);
       }
     };
-
-    fetchUserAndCart();
-  }, [cart, setCart]);
-
-  const handleSignIn = () => {
-    window.location.href = redirectToSignin();
-  };
-
-  const handleSignOut = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-  };
+  
+    initializeUserAndCart();
+  }, [setCart]);  
 
   const filteredBooks = books.filter((book) =>
     book.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
   return (
     <div className="w-full bg-white">
-      <Hero
-        userInfo={user as any}
-        handleSign={handleSignIn}
-        handleSignOut={handleSignOut}
-      />
+      <Hero/>
 
       <div className="flex justify-center items-center min-h-[400px] mt-[-2rem]">
         {isLoading ? (

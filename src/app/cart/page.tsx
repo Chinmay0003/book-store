@@ -36,8 +36,8 @@ const Index = () => {
   );
   const { register, handleSubmit } = useForm<IAddAddressRequest>();
   const subtotal = readyToCheckout.reduce((sum, item) => sum + item.price, 0);
-  const shipping = readyToCheckout.length > 0 ? 5.0 : 0;
-  const discount = 0; // Example discount
+  const shipping = subtotal > 599 ? 0 : 100;
+  const discount = 0;
   const total = subtotal + shipping - discount;
 
   const containerVariants = {
@@ -373,7 +373,7 @@ const Index = () => {
                         <div className="w-20 h-20 bg-slate-100 rounded-lg overflow-hidden shadow-sm">
                           <img
                             src={
-                              item.bookMedia[0]?.metadata?.s3_url ||
+                              item.bookMedia.filter(e=>e.type==="image")[0]?.metadata?.s3_url ||
                               "/placeholder-book.jpg"
                             }
                             alt={item.name}

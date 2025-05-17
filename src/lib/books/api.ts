@@ -14,10 +14,10 @@ export const fetchBooks = async () => {
 
 export const getBookById = async (id: number): Promise<IBookData | null> => {
   try {
-    const res = await axios.get(`${BACKEND_API}/book/${id}`);
-    return res.data.bookData || null;
+    const res = await axios.get<IGetAllBooksResponse>(`${BACKEND_API}/book?bookId=${id}`);
+    return res.data.bookData.length > 0 ? res.data.bookData[0] : null;
   } catch (error) {
-    console.error("❌ Error fetching book by id:", error);
-    return null;
+    console.error("❌ Error fetching books:");
+    throw error;
   }
 };

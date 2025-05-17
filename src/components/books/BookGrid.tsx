@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import BookCard from "@/components/ui/BookCard";
 import { IGetAllBooksResponse } from "@/lib/books/types";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
 
 interface BookGridProps {
   books: IGetAllBooksResponse["bookData"];
@@ -26,6 +28,8 @@ export default function BookGrid({ books, cart }: BookGridProps) {
   const filteredBooks = books.filter((book) =>
     book.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const router = useRouter();
+
 
   useEffect(() => {
     setCurrentPage(1);
@@ -118,11 +122,15 @@ export default function BookGrid({ books, cart }: BookGridProps) {
               <div key={book.id}>
                 <div
                   className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150"
+                  onMouseDown={() => {
+                    router.push(`/book?id=${book.id}`);
+                    setShowDropdown(false); // Close the dropdown on click
+                  }}
                 >
-                  {book.bookMedia.length > 0 ? (
+                  {book.bookMedia.filter(e=>e.type==="image").length > 0 ? (
                     <img
-                      src={book.bookMedia[0].metadata.s3_url}
-                      alt={book.name}
+                      src={book.bookMedia.filter(e=>e.type==="image")[0].metadata.s3_url}
+                      // alt={book.name}
                       className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
                     />
                   ) : (
@@ -130,16 +138,17 @@ export default function BookGrid({ books, cart }: BookGridProps) {
                   )}
                   <span>{book.name}</span>
                 </div>
-                {index < filteredBooks.length - 1 && (
+                {index < books.length - 1 && (
                   <hr className="mx-4 border-t border-gray-200" />
                 )}
               </div>
             ))}
-            {filteredBooks.length === 0 && (
+            {books.length === 0 && (
               <div className="px-4 py-3 text-gray-500">No matching books found</div>
             )}
           </div>
         )}
+
       </div>
 
 
@@ -161,9 +170,11 @@ export default function BookGrid({ books, cart }: BookGridProps) {
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full py-2 px-2 md:px-8"
             style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
             {books.slice((currentPage - 1) * booksPerPage, currentPage * booksPerPage).map((book) => (
-              <div key={book.id} className="transform transition-all duration-300 hover:scale-105">
-                <BookCard book={book} cart={cart} />
-              </div>
+              <Link href={`/book?id=${book.id}`} key={book.id}>
+                <div className="transform transition-all duration-300 hover:scale-105">
+                  <BookCard book={book} cart={cart} />
+                </div>
+              </Link>
             ))}
           </div>
 

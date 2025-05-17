@@ -24,10 +24,6 @@ export default function BookCard({ book, cart }: BookCardProps) {
         {/* Clickable Preview */}
         <div
           className="relative w-full h-60 group cursor-pointer"
-          onClick={() => {
-            useBookStore.getState().setSelectedBook(book);
-            router.push(`/checkout`);
-          }}
           onMouseEnter={() => {
             const video = videoRefs.current[book.id];
             if (video) {
@@ -62,7 +58,7 @@ export default function BookCard({ book, cart }: BookCardProps) {
                 className="absolute w-full h-full object-cover rounded-t-xl"
               />
               <Image
-                src={book.bookMedia[0]?.metadata?.s3_url || ""}
+                src={book.bookMedia.filter(e=>e.type==="image")[0]?.metadata?.s3_url || ""}
                 alt={book.name}
                 fill
                 className="object-cover transition-opacity duration-300 group-hover:opacity-0 rounded-t-xl"
@@ -72,7 +68,7 @@ export default function BookCard({ book, cart }: BookCardProps) {
             </>
           ) : (
             <Image
-              src={book.bookMedia[0]?.metadata?.s3_url || ""}
+              src={book.bookMedia.filter(e=>e.type==="image")[0]?.metadata?.s3_url || ""}
               alt={book.name}
               fill
               className="object-cover rounded-t-xl"
