@@ -1,4 +1,5 @@
 import { BookCategory, BookQuality, BookType } from "@/lib/books/enums";
+import { User } from "@/types/user";
 
 export interface IBookMediaResponse {
   id: number;
@@ -23,4 +24,15 @@ export interface IBookData {
 
 export interface IGetAllBooksResponse {
   bookData: IBookData[];
+}
+
+export interface AuthStore {
+  user: User | null;
+  cart: string[];
+  isLoading: boolean;
+  setUser: (user: User | null) => void;
+  setCart: (cart: string[]) => void;
+  handleSignIn: () => void;
+  handleSignOut: () => void;
+  initializeAuth: () => Promise<void>;
 }
