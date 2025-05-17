@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -383,4 +383,12 @@ const BookDetailsPage = () => {
   );
 };
 
-export default BookDetailsPage;
+const BookDetailsPageWrapper = () => {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <BookDetailsPage/>
+    </Suspense>
+  )
+}
+
+export default BookDetailsPageWrapper;
