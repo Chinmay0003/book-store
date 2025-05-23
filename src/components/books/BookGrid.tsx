@@ -116,7 +116,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              window.location.href = `/search?query=${encodeURIComponent(searchQuery)}`;
+              router.push(`/search/${encodeURIComponent(searchQuery)}`);
             }
           }}
           onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
@@ -197,7 +197,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
             {/* Grid Container */}
             <div
               ref={carouselRef}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full py-2 px-2 md:px-8"
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 w-full py-2 px-2 md:px-8"
               style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
               {Object.keys(bookCategories).map((category: string) => (
                 <div

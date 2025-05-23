@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/books/bookStore";
 import { BookOpenIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { FilterIcon } from "lucide-react";
@@ -10,11 +10,6 @@ import { IBookData } from "@/lib/books/types";
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import Navbar from "@/components/home/Navbar";
 import Link from "next/link";
-
-interface PageProps {
-  params: Promise<{ subcategory: string }>;
-}
-
 function getPaginationDots(current: number, total: number) {
   // Show max 5 dots: [1, ..., current-1, current, current+1, ..., total]
   if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
@@ -47,10 +42,9 @@ const filterBooksByPrice = (book: IBookData, filter: string): boolean => {
       return true;
   }
 };
-const SubcategoryPage = async ({ params }: PageProps) => {
-  // Decode subcategory to handle URL-encoded spaces (e.g., %20)
-  const resolvedParams = await params;
-  const subcategory = decodeURIComponent(resolvedParams.subcategory);
+const SubcategoryPage = () => {
+  const params = useParams<{ subcategory: string }>();
+  const subcategory = decodeURIComponent(params.subcategory);
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -167,9 +161,7 @@ const SubcategoryPage = async ({ params }: PageProps) => {
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                window.location.href = `/search?query=${encodeURIComponent(
-                  searchQuery,
-                )}`;
+                router.push(`/search/${encodeURIComponent(searchQuery)}`);
               }
             }}
             onBlur={() => setTimeout(() => setShowDropdown(false), 150)}

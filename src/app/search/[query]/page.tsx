@@ -1,6 +1,6 @@
 "use client";
 import BookCard from "@/components/ui/BookCard";
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCartStore } from "@/lib/books/bookStore";
 import { IBookData } from "@/lib/books/types";
@@ -52,8 +52,8 @@ const filterBooksByPrice = (book: IBookData, filter: string): boolean => {
 };
 
 export default function SearchPage() {
-  const searchParams = useSearchParams();
-  const query = searchParams.get("query") || "";
+  const params = useParams<{ query: string }>();
+  const query = decodeURIComponent(params.query);
   const [books, setBooks] = useState<IBookData[]>([]);
   const [loading, setLoading] = useState(true);
   const cart = useCartStore.getState().cart;
