@@ -137,7 +137,7 @@ export default function SearchPage() {
             <MagnifyingGlassIcon className="h-8 w-8" />
             <span className="text-3xl font-bold text-gray-800">Search Results</span>
           </span>
-          <span className="text-lg text-gray-500">for "{query}"</span>
+          <span className="text-xl text-gray-700">for "{query}"</span>
         </div>
         <div className="flex items-center justify-center gap-3 mb-10 mt-10">
           <FilterIcon className="w-5 h-5 text-blue-500" />
