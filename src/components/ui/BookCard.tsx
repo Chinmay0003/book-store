@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { IBookData } from "@/lib/books/types";
-import { Eye, ShoppingCart, XCircle, BookOpen, IndianRupee } from "lucide-react";
-import { useBookStore } from "@/lib/books/bookStore";
+import { IndianRupee, Layers, BadgeCheck, Bookmark } from "lucide-react";
 
 interface BookCardProps {
   book: IBookData;
@@ -16,7 +15,6 @@ interface BookCardProps {
 
 export default function BookCard({ book, cart }: BookCardProps) {
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
-  const router = useRouter();
 
   // Check if book is updated within last 7 days
   const isNew = (() => {
@@ -73,7 +71,10 @@ export default function BookCard({ book, cart }: BookCardProps) {
                 className="absolute w-full h-full object-cover rounded-t-xl"
               />
               <Image
-                src={book.bookMedia.filter(e=>e.type==="image")[0]?.metadata?.s3_url || ""}
+                src={
+                  book.bookMedia.filter((e) => e.type === "image")[0]?.metadata
+                    ?.s3_url || ""
+                }
                 alt={book.name}
                 fill
                 className="object-cover transition-opacity duration-300 group-hover:opacity-0 rounded-t-xl"
@@ -83,7 +84,10 @@ export default function BookCard({ book, cart }: BookCardProps) {
             </>
           ) : (
             <Image
-              src={book.bookMedia.filter(e=>e.type==="image")[0]?.metadata?.s3_url || ""}
+              src={
+                book.bookMedia.filter((e) => e.type === "image")[0]?.metadata?.s3_url ||
+                ""
+              }
               alt={book.name}
               fill
               className="object-cover rounded-t-xl"
@@ -94,15 +98,44 @@ export default function BookCard({ book, cart }: BookCardProps) {
         </div>
 
         {/* Book Info */}
-        <div className="flex flex-col items-center gap-3 w-full mb-4 px-4 mt-4">
-          <div className="flex items-center gap-2 w-full">
-            <BookOpen className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg text-[#22223b] truncate">{book.name}</h2>
+        {/* Book Info Section */}
+        <div className="flex flex-col gap-4 w-full mb-4 px-4 mt-6">
+          {/* Book Title */}
+          <div className="flex items-center gap-3 w-full">
+            <Bookmark className="w-5 h-5 text-blue-600" />
+            <span
+              className="text-base text-gray-800 font-medium truncate"
+              title={book.name}>
+              {book.name}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2 w-full">
+          {/* Book Type */}
+          <div className="flex items-center gap-3 w-full">
+            <Layers className="w-5 h-5 text-purple-600" />
+            <span
+              className="text-base text-gray-800 font-medium truncate"
+              title={book.type}>
+              {book.type}
+            </span>
+          </div>
+
+          {/* Book Price */}
+          <div className="flex items-center gap-3 w-full">
             <IndianRupee className="w-5 h-5 text-green-600" />
-            <p className="text-xl font-bold text-[#22223b]">{book.price.toFixed(2)}</p>
+            <span className="text-lg font-bold text-gray-900">
+              ₹{book.price.toFixed(2)}
+            </span>
+          </div>
+
+          {/* Book Quality */}
+          <div className="flex items-center gap-3 w-full">
+            <BadgeCheck className="w-5 h-5 text-yellow-600" />
+            <span
+              className="text-base text-gray-800 font-medium truncate"
+              title={book.quality}>
+              {book.quality}
+            </span>
           </div>
         </div>
       </div>

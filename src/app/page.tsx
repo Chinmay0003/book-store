@@ -1,10 +1,7 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import { fetchBooks } from "@/lib/books/api";
-import { IGetAllBooksResponse } from "@/lib/books/types";
-import { authUser, redirectToSignin } from "@/lib/auth/api";
-import { addBookToCart, fetchActiveCart, updateCartWithBooks } from "@/lib/cart/api";
+import { authUser } from "@/lib/auth/api";
+import { fetchActiveCart } from "@/lib/cart/api";
 import { User } from "@/types/user";
 import { useBookStore, useCartStore } from "@/lib/books/bookStore";
 import { ensureBooksLoaded } from "@/lib/books/bookLoader";

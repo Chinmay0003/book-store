@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import userImg from "../../../public/bookImg.jpg";
 import userIcon from "@/assets/userIcon.jpg";
 import { useAuthStore, useCartStore } from "@/lib/books/bookStore";
+import Link from "next/link";
 
 export default function Navbar() {
   const router = useRouter();
@@ -19,24 +20,24 @@ export default function Navbar() {
       {/* Navigation Bar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md max-w-8xl mx-auto flex items-center justify-between py-6 px-5 text-black backdrop-blur-md transition-all duration-300">
         {/* Logo */}
-        <div className="flex items-center gap-3">
-          <Image src="/favicon.ico" alt="Mybestkid Logo" width={40} height={40} />
-          <span className="text-3xl font-bold text-[#23395d]">Mybestkid</span>
-        </div>
+        <Link href={"/"}>
+          <div className="flex items-center gap-3">
+            <Image src="/favicon.ico" alt="Mybestkid Logo" width={40} height={40} />
+            <span className="text-3xl font-bold text-[#23395d]">Mybestkid</span>
+          </div>
+        </Link>
 
         {/* Hamburger Icon for Mobile */}
         <button
           className="md:hidden p-2 rounded focus:outline-none text-black"
           aria-label="Open menu"
-          onClick={() => setMobileNavOpen((v) => !v)}
-        >
+          onClick={() => setMobileNavOpen((v) => !v)}>
           <svg
             width="28"
             height="28"
             fill="none"
             viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+            stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -52,8 +53,7 @@ export default function Navbar() {
             <div className="flex gap-6 text-[#23395d] font-medium text-lg">
               <button
                 className="relative p-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-                onClick={() => router.push("/cart")}
-              >
+                onClick={() => router.push("/cart")}>
                 <ShoppingCart className="h-6 w-6 text-[#22223b]" />
                 {cart.length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -63,43 +63,38 @@ export default function Navbar() {
               </button>
               <a
                 href="/contact"
-                className="border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition"
-              >
+                className="border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
                 Contact Us
               </a>
               <button
                 onClick={handleSignOut}
-                className="flex items-center gap-2 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition"
-              >
+                className="flex items-center gap-2 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
                 Sign out
               </button>
               {/* Add User Icon */}
               <Image
-                    src={userIcon}
-                    alt="User Icon"
-                    width={60}
-                    height={40}
-                    className="rounded-full border border-gray-300"
-                />
+                src={userIcon}
+                alt="User Icon"
+                width={60}
+                height={40}
+                className="rounded-full border border-gray-300"
+              />
             </div>
           ) : (
             <div className="flex gap-6 text-[#23395d] font-medium text-lg">
               <a
                 href="/"
-                className="border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition"
-              >
+                className="border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
                 HOME
               </a>
               <a
                 href="/contact"
-                className="border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition"
-              >
+                className="border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
                 Contact Us
               </a>
               <a
                 onClick={handleSignIn}
-                className="flex items-center gap-2 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition"
-              >
+                className="flex items-center gap-2 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
                 Sign in
               </a>
             </div>
@@ -113,29 +108,26 @@ export default function Navbar() {
               <>
                 <button
                   onClick={() => setMobileNavOpen(false)}
-                  className="mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition"
-                >
+                  className="mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
                   Cart ({cart.length || 0})
                 </button>
                 <a
                   href="/contact"
-                  className="mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition"
-                >
+                  className="mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
                   Contact Us
                 </a>
                 <button
                   onClick={() => setMobileNavOpen(false)}
-                  className="flex items-center gap-2 mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition"
-                >
+                  className="flex items-center gap-2 mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
                   Sign out
                 </button>
                 {/* Add User Icon */}
                 <Image
-                    src={userIcon}
-                    alt="User Icon"
-                    width={40}
-                    height={40}
-                    className="rounded-full border border-gray-300"
+                  src={userIcon}
+                  alt="User Icon"
+                  width={40}
+                  height={40}
+                  className="rounded-full border border-gray-300"
                 />
               </>
             ) : (
@@ -143,20 +135,17 @@ export default function Navbar() {
                 <a
                   href="/"
                   className="mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition"
-                  onClick={() => setMobileNavOpen(false)}
-                >
+                  onClick={() => setMobileNavOpen(false)}>
                   HOME
                 </a>
                 <a
                   href="/contact"
-                  className="mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition"
-                >
+                  className="mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
                   Contact Us
                 </a>
                 <a
                   onClick={() => setMobileNavOpen(false)}
-                  className="flex items-center gap-2 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition"
-                >
+                  className="flex items-center gap-2 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
                   Sign in
                 </a>
               </>

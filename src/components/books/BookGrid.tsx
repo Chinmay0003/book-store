@@ -4,6 +4,7 @@ import BookCard from "@/components/ui/BookCard";
 import { IGetAllBooksResponse } from "@/lib/books/types";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import BookCategory from "../ui/BookCategory";
+import { useRouter } from "next/navigation";
 
 interface BookGridProps {
   books: IGetAllBooksResponse["bookData"];
@@ -20,24 +21,14 @@ function getPaginationDots(current: number, total: number) {
 export default function BookGrid({ books, cart }: BookGridProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<string>("Playful");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
   const booksPerPage = 8; // Changed to 8 books per page (2 rows of 4)
   const carouselRef = useRef<HTMLDivElement>(null);
-
-  // Filter books based on active category and search term
-  const filteredBooks = books.filter(
-    (book) =>
-      book.category === activeFilter &&
-      book.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredBooks = books.filter((book) =>
+    book.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-  const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
-
-  const indexOfLastBook = currentPage * booksPerPage;
-  const indexOfFirstBook = indexOfLastBook - booksPerPage;
-
-  const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
-
+  const totalPages = Math.ceil(books.length / booksPerPage);
   const handlePageChange = (direction: "next" | "prev") => {
     if (isAnimating) return;
     setIsAnimating(true);
@@ -84,11 +75,10 @@ export default function BookGrid({ books, cart }: BookGridProps) {
       description: "Books for the youngest readers, filled with fun and discovery.",
     },
   };
-  const searchBook = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("Search term:", e.target.value);
-    setSearchTerm(e.target.value);
+  useEffect(() => {
     setCurrentPage(1);
-  };
+  }, [searchQuery]);
+  const router = useRouter();
   return (
     <section
       id="book-collection"
@@ -96,66 +86,142 @@ export default function BookGrid({ books, cart }: BookGridProps) {
       <h2 className="text-3xl font-bold text-center mb-10 text-gray-800 tracking-tight drop-shadow-sm">
         Our Premium Book Collection
       </h2>
-      <div className="w-full max-w-md mb-8 relative">
-        <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+      {/* Search Bar */}
+      <div className="relative w-full max-w-xl mb-8">
+        {/* Search Icon */}
+        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
             fill="none"
             viewBox="0 0 24 24"
+            strokeWidth="2"
             stroke="currentColor"
-            strokeWidth={2}>
+            className="w-5 h-5">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"
+              d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
             />
           </svg>
-        </span>
+        </div>
+
+        {/* Search Input */}
         <input
-          onChange={searchBook}
-          value={searchTerm}
           type="text"
-          placeholder="Search for a book..."
-          className="w-full pl-12 pr-4 py-3 rounded-2xl border border-blue-400 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)] placeholder-gray-400 text-black fp focus:outline-none"
+          placeholder="Search or type a book name..."
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setShowDropdown(true);
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              window.location.href = `/search?query=${encodeURIComponent(searchTerm)}`;
+              window.location.href = `/search?query=${encodeURIComponent(searchQuery)}`;
             }
           }}
+          onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+          className="w-full pl-12 pr-12 py-3 rounded-full shadow-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-lg"
         />
-      </div>
 
-      <div className="w-full flex-col justify-start px-10">
-        <div className="w-full flex justify-start mb-4 px-10">
-          <h2 className="text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm">
+        {/* Clear Button */}
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-all duration-200 group">
+            <div className="absolute -inset-1 rounded-full bg-gray-100 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+              className="w-5 h-5 relative z-10">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        )}
+
+        {/* Dropdown */}
+        {showDropdown && searchQuery.trim() !== "" && (
+          <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-md max-h-64 overflow-y-auto">
+            {filteredBooks.map((book, index) => (
+              <div key={book.id}>
+                <div
+                  className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150"
+                  onMouseDown={() => {
+                    router.push(`/book?id=${book.id}`);
+                    setShowDropdown(false);
+                  }}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      router.push(`/book?id=${book.id}`);
+                      setShowDropdown(false);
+                    }
+                  }}>
+                  {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
+                    <img
+                      src={
+                        book.bookMedia.filter((e) => e.type === "image")[0].metadata
+                          .s3_url
+                      }
+                      // alt={book.name}
+                      className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-md bg-gray-100 border border-gray-200"></div>
+                  )}
+                  <span>{book.name}</span>
+                </div>
+                {index < books.length - 1 && (
+                  <hr className="mx-4 border-t border-gray-200" />
+                )}
+              </div>
+            ))}
+            {books.length === 0 && (
+              <div className="px-4 py-3 text-gray-500">No matching books found</div>
+            )}
+          </div>
+        )}
+      </div>
+      <div className="w-full flex-col justify-start py-10 px-10">
+        <div className="w-full flex flex-col items-center gap-2 max-w-10xl">
+          <h2 className="text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex justify-start mb-5 mt-5">
             Product by category
           </h2>
-        </div>
-        <div
-          ref={carouselRef}
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-2 gap-y-4 w-full px-2 md:px-20 py-10"
-          style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
-          {Object.keys(bookCategories).map((category: string) => (
+          <div className="flex  justify-center">
+            {/* Grid Container */}
             <div
-              key={category}
-              className="transform transition-all duration-300 hover:scale-105"
-              style={{ minWidth: "260px", maxWidth: "280px" }}>
-              <div className="bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)]">
-                <BookCategory category={category} img={bookCategories[category].img} />
-              </div>
+              ref={carouselRef}
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full py-2 px-2 md:px-8"
+              style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
+              {Object.keys(bookCategories).map((category: string) => (
+                <div
+                  key={category}
+                  className="transform transition-all duration-300 hover:scale-105"
+                  style={{ minWidth: "260px", maxWidth: "280px" }}>
+                  <div className="bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)]">
+                    <BookCategory
+                      category={category}
+                      img={bookCategories[category].img}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
 
       <div className="w-full flex-col justify-start px-10">
-        <div className="w-full flex justify-start mb-4 px-10">
-          <h2 className="text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm">
-            Top Picks of the Day:
+        <div className="relative w-full flex flex-col items-center gap-2">
+          <h2 className="text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex items-center justify-center max-w-10xl mb-5 mt-5">
+            Top Picks of the Day
           </h2>
-        </div>
-        <div className="relative w-full flex flex-col items-center">
           <div className="flex items-center justify-center max-w-12xl">
             {/* Left Navigation Button */}
             <button
@@ -173,7 +239,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
               ref={carouselRef}
               className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full py-2 px-2 md:px-8"
               style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
-              {currentBooks
+              {books
                 .slice((currentPage - 1) * booksPerPage, currentPage * booksPerPage)
                 .map((book) => (
                   <Link href={`/book?id=${book.id}`} key={book.id}>
@@ -198,7 +264,6 @@ export default function BookGrid({ books, cart }: BookGridProps) {
             </button>
           </div>
         </div>
-
         {/* Pagination Indicator */}
         <div className="flex items-center justify-center mt-8 space-x-2">
           {getPaginationDots(currentPage, totalPages).map((dot, idx) =>
