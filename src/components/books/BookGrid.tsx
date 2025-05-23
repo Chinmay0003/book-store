@@ -3,6 +3,7 @@ import Link from "next/link";
 import BookCard from "@/components/ui/BookCard";
 import { IGetAllBooksResponse } from "@/lib/books/types";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import BookCategory from "../ui/BookCategory";
 import { useRouter } from "next/navigation";
 
 interface BookGridProps {
@@ -22,19 +23,12 @@ export default function BookGrid({ books, cart }: BookGridProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  const booksPerPage = 8;
+  const booksPerPage = 8; // Changed to 8 books per page (2 rows of 4)
   const carouselRef = useRef<HTMLDivElement>(null);
-
   const filteredBooks = books.filter((book) =>
-    book.name.toLowerCase().includes(searchQuery.toLowerCase())
+    book.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-  const router = useRouter();
-
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
-
+  const totalPages = Math.ceil(books.length / booksPerPage);
   const handlePageChange = (direction: "next" | "prev") => {
     if (isAnimating) return;
     setIsAnimating(true);
@@ -47,9 +41,44 @@ export default function BookGrid({ books, cart }: BookGridProps) {
       });
     }
     setCurrentPage(newPage);
-    setTimeout(() => setIsAnimating(false), 500);
+
+    // Reset animation state after transition
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 500);
   };
 
+  const handleDotClick = (page: number) => {
+    if (!isAnimating && typeof page === "number") {
+      setCurrentPage(page);
+      if (carouselRef.current) {
+        const scrollAmount = carouselRef.current.offsetWidth * (page - 1);
+        carouselRef.current.scrollTo({
+          left: scrollAmount,
+          behavior: "smooth",
+        });
+      }
+    }
+  };
+
+  const bookCategories: Record<string, { img: string; description: string }> = {
+    Playful: {
+      img: require("../../../public/playful.jpg"),
+      description: "Books that inspire creativity and imagination.",
+    },
+    "School Going": {
+      img: require("../../../public/schoolGoing.jpg"),
+      description: "Books that support school curricula and learning.",
+    },
+    Toddler: {
+      img: require("../../../public/toddler.jpg"),
+      description: "Books for the youngest readers, filled with fun and discovery.",
+    },
+  };
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+  const router = useRouter();
   return (
     <section
       id="book-collection"
@@ -57,7 +86,6 @@ export default function BookGrid({ books, cart }: BookGridProps) {
       <h2 className="text-3xl font-bold text-center mb-10 text-gray-800 tracking-tight drop-shadow-sm">
         Our Premium Book Collection
       </h2>
-
       {/* Search Bar */}
       <div className="relative w-full max-w-xl mb-8">
         {/* Search Icon */}
@@ -68,8 +96,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
             viewBox="0 0 24 24"
             strokeWidth="2"
             stroke="currentColor"
-            className="w-5 h-5"
-          >
+            className="w-5 h-5">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -87,6 +114,11 @@ export default function BookGrid({ books, cart }: BookGridProps) {
             setSearchQuery(e.target.value);
             setShowDropdown(true);
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              router.push(`/search/${encodeURIComponent(searchQuery)}`);
+            }
+          }}
           onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
           className="w-full pl-12 pr-12 py-3 rounded-full shadow-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-lg"
         />
@@ -95,8 +127,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
         {searchQuery && (
           <button
             onClick={() => setSearchQuery("")}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-all duration-200 group"
-          >
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-all duration-200 group">
             <div className="absolute -inset-1 rounded-full bg-gray-100 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -104,8 +135,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
               viewBox="0 0 24 24"
               strokeWidth="2"
               stroke="currentColor"
-              className="w-5 h-5 relative z-10"
-            >
+              className="w-5 h-5 relative z-10">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -124,12 +154,21 @@ export default function BookGrid({ books, cart }: BookGridProps) {
                   className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150"
                   onMouseDown={() => {
                     router.push(`/book?id=${book.id}`);
-                    setShowDropdown(false); // Close the dropdown on click
+                    setShowDropdown(false);
                   }}
-                >
-                  {book.bookMedia.filter(e=>e.type==="image").length > 0 ? (
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      router.push(`/book?id=${book.id}`);
+                      setShowDropdown(false);
+                    }
+                  }}>
+                  {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
                     <img
-                      src={book.bookMedia.filter(e=>e.type==="image")[0].metadata.s3_url}
+                      src={
+                        book.bookMedia.filter((e) => e.type === "image")[0].metadata
+                          .s3_url
+                      }
                       // alt={book.name}
                       className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
                     />
@@ -148,47 +187,115 @@ export default function BookGrid({ books, cart }: BookGridProps) {
             )}
           </div>
         )}
-
       </div>
-
-
-
-      <div className="relative w-full flex flex-col items-center">
-        <div className="flex items-center justify-center max-w-12xl">
-          <button
-            onClick={() => handlePageChange("prev")}
-            disabled={currentPage === 1 || isAnimating}
-            className={`p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
-              currentPage === 1 || isAnimating ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            aria-label="Previous page">
-            <ChevronLeftIcon className="w-5 h-5 md:w-6 md:h-6" />
-          </button>
-
-          <div
-            ref={carouselRef}
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full py-2 px-2 md:px-8"
-            style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
-            {books.slice((currentPage - 1) * booksPerPage, currentPage * booksPerPage).map((book) => (
-              <Link href={`/book?id=${book.id}`} key={book.id}>
-                <div className="transform transition-all duration-300 hover:scale-105">
-                  <BookCard book={book} cart={cart} />
+      <div className="w-full flex-col justify-start py-10 px-10">
+        <div className="w-full flex flex-col items-center gap-2 max-w-10xl">
+          <h2 className="text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex justify-start mb-5 mt-5">
+            Product by category
+          </h2>
+          <div className="flex  justify-center">
+            {/* Grid Container */}
+            <div
+              ref={carouselRef}
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-16 w-full py-2 px-2 md:px-8"
+              style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
+              {Object.keys(bookCategories).map((category: string) => (
+                <div
+                  key={category}
+                  className="transform transition-all duration-300 hover:scale-105"
+                  style={{ minWidth: "260px", maxWidth: "280px" }}>
+                  <div className="bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)]">
+                    <BookCategory
+                      category={category}
+                      img={bookCategories[category].img}
+                    />
+                  </div>
                 </div>
-              </Link>
-            ))}
+              ))}
+            </div>
           </div>
-
-          <button
-            onClick={() => handlePageChange("next")}
-            disabled={currentPage === Math.ceil(books.length / booksPerPage) || isAnimating}
-            className={`p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
-              currentPage === Math.ceil(books.length / booksPerPage) || isAnimating ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            aria-label="Next page">
-            <ChevronRightIcon className="w-5 h-5 md:w-6 md:h-6" />
-          </button>
         </div>
       </div>
+
+      <div className="w-full flex-col justify-start px-10">
+        <div className="relative w-full flex flex-col items-center gap-2">
+          <h2 className="text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex items-center justify-center max-w-10xl mb-5 mt-5">
+            Top Picks of the Day
+          </h2>
+          <div className="flex items-center justify-center max-w-12xl">
+            {/* Left Navigation Button */}
+            <button
+              onClick={() => handlePageChange("prev")}
+              disabled={currentPage === 1 || isAnimating}
+              className={`p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+                currentPage === 1 || isAnimating ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              aria-label="Previous page">
+              <ChevronLeftIcon className="w-5 h-5 md:w-6 md:h-6" />
+            </button>
+
+            {/* Grid Container */}
+            <div
+              ref={carouselRef}
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full py-2 px-2 md:px-8"
+              style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
+              {books
+                .slice((currentPage - 1) * booksPerPage, currentPage * booksPerPage)
+                .map((book) => (
+                  <Link href={`/book?id=${book.id}`} key={book.id}>
+                    <div className="transform transition-all duration-300 hover:scale-105">
+                      <BookCard book={book} cart={cart} />
+                    </div>
+                  </Link>
+                ))}
+            </div>
+
+            {/* Right Navigation Button */}
+            <button
+              onClick={() => handlePageChange("next")}
+              disabled={currentPage === totalPages || isAnimating}
+              className={`p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+                currentPage === totalPages || isAnimating
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
+              aria-label="Next page">
+              <ChevronRightIcon className="w-5 h-5 md:w-6 md:h-6" />
+            </button>
+          </div>
+        </div>
+        {/* Pagination Indicator */}
+        <div className="flex items-center justify-center mt-8 space-x-2">
+          {getPaginationDots(currentPage, totalPages).map((dot, idx) =>
+            dot === "..." ? (
+              <span key={"ellipsis-" + idx} className="w-4 text-center text-gray-400">
+                …
+              </span>
+            ) : (
+              <button
+                key={"dot-" + idx}
+                onClick={() => handleDotClick(dot as number)}
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+                  currentPage === dot
+                    ? "bg-blue-600 scale-125"
+                    : "bg-gray-300 hover:bg-gray-400"
+                }`}
+                aria-label={`Go to page ${dot}`}
+              />
+            ),
+          )}
+        </div>
+      </div>
+
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .custom-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </section>
   );
 }

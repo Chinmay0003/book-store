@@ -1,12 +1,10 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import { fetchBooks } from "@/lib/books/api";
-import { IGetAllBooksResponse } from "@/lib/books/types";
-import { authUser, redirectToSignin } from "@/lib/auth/api";
-import { addBookToCart, fetchActiveCart, updateCartWithBooks } from "@/lib/cart/api";
+import { authUser } from "@/lib/auth/api";
+import { fetchActiveCart } from "@/lib/cart/api";
 import { User } from "@/types/user";
 import { useBookStore, useCartStore } from "@/lib/books/bookStore";
+import { ensureBooksLoaded } from "@/lib/books/bookLoader";
 
 // Components
 import Hero from "@/components/home/Hero";
@@ -34,37 +32,25 @@ export default function Home() {
 
   // Load books on initial mount
   useEffect(() => {
-    const loadBooks = async () => {
-      if (books.length > 0) {
-        setIsLoading(false);
-        return;
-      }
-      console.log("Loading books...");
-      try {
-        const booksData = await fetchBooks();
-        const unsoldBooks = booksData.bookData.filter((book) => !book.isSold);
-        setBooks(unsoldBooks);
-      } catch (error) {
-        console.error("Error loading books:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
+    async function loadBooks() {
+      setIsLoading(true);
+      await ensureBooksLoaded();
+      setIsLoading(false);
+    }
     loadBooks();
-  }, [books, setBooks]);
+  }, [setBooks]);
 
   useEffect(() => {
     const initializeUserAndCart = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
-  
+
       try {
         console.log("Fetching user and cart...", token);
         const userData = await authUser(token);
         setUser(userData);
         console.log("User data:", userData);
-  
+
         // Always replace cart with server cart — do NOT merge to avoid duplicates
         const cartBooks = await fetchActiveCart(token);
         if (cartBooks) {
@@ -79,20 +65,25 @@ export default function Home() {
         console.error("Error fetching user or cart", err);
       }
     };
-  
-    initializeUserAndCart();
-  }, [setCart]);  
 
-  const filteredBooks = books.filter((book) =>
-    book.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+    initializeUserAndCart();
+  }, [setCart]);
+
+  const filteredBooks = books
+    .filter((book) => book.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   return (
     <div className="w-full bg-white">
-      <Hero/>
+      <Hero />
 
       <div className="flex justify-center items-center min-h-[400px] mt-[-2rem]">
         {isLoading ? (
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-600"></div>
+          <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+            <div className="floating-shape absolute w-48 h-48 bg-pink-100 rounded-full opacity-60 mix-blend-multiply top-20 left-20 animate-float" />
+            <div className="floating-shape absolute w-48 h-48 bg-pink-100 rounded-full opacity-60 mix-blend-multiply bottom-20 left-50 animate-float" />
+            <div className="floating-shape absolute w-64 h-64 bg-purple-100 rounded-full opacity-40 mix-blend-multiply top-40 right-32 animate-float delay-500" />
+            <div className="floating-shape absolute w-32 h-32 bg-blue-100 rounded-full opacity-60 mix-blend-multiply bottom-20 left-1/3 animate-float delay-1000" />
+          </div>
         ) : (
           <BookGrid books={filteredBooks} cart={cart} />
         )}

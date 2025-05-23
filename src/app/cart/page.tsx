@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Trash2, Check, Truck, Store, Gift, Lock } from "lucide-react";
+import { Trash2, Lock } from "lucide-react";
 import { useBookStore, useCartStore } from "@/lib/books/bookStore";
 import { updateCartWithBooks } from "@/lib/cart/api";
 import { addAddress, getAllAddress } from "@/lib/address/api";
@@ -328,9 +328,13 @@ const Index = () => {
                             className="w-full p-3 rounded-lg border-2 border-slate-200"
                             placeholder="State"
                           />
-                          <select {...register("country")} className="w-full p-3 pr-10 rounded-lg border-2 border-slate-200 appearance-none bg-white">
-                            {countries.map(country => (
-                              <option key={country} value={country}>{country}</option>
+                          <select
+                            {...register("country")}
+                            className="w-full p-3 pr-10 rounded-lg border-2 border-slate-200 appearance-none bg-white">
+                            {countries.map((country) => (
+                              <option key={country} value={country}>
+                                {country}
+                              </option>
                             ))}
                           </select>
                         </div>
@@ -373,8 +377,8 @@ const Index = () => {
                         <div className="w-20 h-20 bg-slate-100 rounded-lg overflow-hidden shadow-sm">
                           <img
                             src={
-                              item.bookMedia.filter(e=>e.type==="image")[0]?.metadata?.s3_url ||
-                              "/placeholder-book.jpg"
+                              item.bookMedia.filter((e) => e.type === "image")[0]
+                                ?.metadata?.s3_url || "/placeholder-book.jpg"
                             }
                             alt={item.name}
                             className="w-full h-full object-cover"
