@@ -5,6 +5,7 @@ import { IGetAllBooksResponse } from "@/lib/books/types";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import BookCategory from "../ui/BookCategory";
 import { useRouter } from "next/navigation";
+import LoadingSpinner from "../ui/LoadingSpinner";
 
 interface BookGridProps {
   books: IGetAllBooksResponse["bookData"];
@@ -21,6 +22,7 @@ function getPaginationDots(current: number, total: number) {
 export default function BookGrid({ books, cart }: BookGridProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [loadingCategory, setLoadingCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const booksPerPage = 8; // Changed to 8 books per page (2 rows of 4)
@@ -79,6 +81,12 @@ export default function BookGrid({ books, cart }: BookGridProps) {
     setCurrentPage(1);
   }, [searchQuery]);
   const router = useRouter();
+
+  const handleCategoryClick = (category: string) => {
+    setLoadingCategory(category);
+    router.push(`/category/${encodeURIComponent(category)}`);
+  };
+
   return (
     <section
       id="book-collection"
@@ -202,9 +210,18 @@ export default function BookGrid({ books, cart }: BookGridProps) {
               {Object.keys(bookCategories).map((category: string) => (
                 <div
                   key={category}
-                  className="transform transition-all duration-300 hover:scale-105"
-                  style={{ minWidth: "260px", maxWidth: "280px" }}>
-                  <div className="bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)]">
+                  className="transform transition-all duration-300 hover:scale-105 relative"
+                  style={{ minWidth: "260px", maxWidth: "280px" }}
+                  onClick={() => handleCategoryClick(category)}>
+                  {loadingCategory === category && (
+                    <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
+                      <LoadingSpinner size="h-12 w-12" />
+                    </div>
+                  )}
+                  <div
+                    className={`bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)] ${
+                      loadingCategory === category ? "opacity-50" : ""
+                    }`}>
                     <BookCategory
                       category={category}
                       img={bookCategories[category].img}

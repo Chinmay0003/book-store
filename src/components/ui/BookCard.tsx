@@ -69,6 +69,7 @@ export default function BookCard({ book, cart }: BookCardProps) {
                 loop
                 playsInline
                 className="absolute w-full h-full object-cover rounded-t-xl"
+                preload="none"
               />
               <Image
                 src={
@@ -79,7 +80,6 @@ export default function BookCard({ book, cart }: BookCardProps) {
                 fill
                 className="object-cover transition-opacity duration-300 group-hover:opacity-0 rounded-t-xl"
                 sizes="(max-width: 768px) 100vw, 33vw"
-                priority
               />
             </>
           ) : (
@@ -92,7 +92,6 @@ export default function BookCard({ book, cart }: BookCardProps) {
               fill
               className="object-cover rounded-t-xl"
               sizes="(max-width: 768px) 100vw, 33vw"
-              priority
             />
           )}
         </div>

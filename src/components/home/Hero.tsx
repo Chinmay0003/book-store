@@ -58,8 +58,7 @@ export default function Hero() {
               <Image
                 src={logoImage}
                 alt="Books background"
-                width={400}
-                height={400}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="w-full h-auto object-contain"
                 priority
               />

@@ -9,8 +9,11 @@ import { ensureBooksLoaded } from "@/lib/books/bookLoader";
 // Components
 import Hero from "@/components/home/Hero";
 import BookGrid from "@/components/books/BookGrid";
-import Features from "@/components/home/Features";
-import Footer from "@/components/layout/Footer";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import dynamic from "next/dynamic";
+
+const Features = dynamic(() => import("@/components/home/Features"));
+const Footer = dynamic(() => import("@/components/layout/Footer"));
 
 export default function Home() {
   const { books, setBooks } = useBookStore();
@@ -18,6 +21,7 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const { cart, setCart, initializeCart } = useCartStore();
   const [isLoading, setIsLoading] = useState(true);
+  const [visibleBooks, setVisibleBooks] = useState(8);
 
   // Handle token in URL for initial login
   useEffect(() => {
@@ -72,22 +76,31 @@ export default function Home() {
   const filteredBooks = books
     .filter((book) => book.name.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+  const handleLoadMore = () => {
+    setVisibleBooks((prev) => prev + 8);
+  };
   return (
     <div className="w-full bg-white">
       <Hero />
 
       <div className="flex justify-center items-center min-h-[400px] mt-[-2rem]">
         {isLoading ? (
-          <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-            <div className="floating-shape absolute w-48 h-48 bg-pink-100 rounded-full opacity-60 mix-blend-multiply top-20 left-20 animate-float" />
-            <div className="floating-shape absolute w-48 h-48 bg-pink-100 rounded-full opacity-60 mix-blend-multiply bottom-20 left-50 animate-float" />
-            <div className="floating-shape absolute w-64 h-64 bg-purple-100 rounded-full opacity-40 mix-blend-multiply top-40 right-32 animate-float delay-500" />
-            <div className="floating-shape absolute w-32 h-32 bg-blue-100 rounded-full opacity-60 mix-blend-multiply bottom-20 left-1/3 animate-float delay-1000" />
-          </div>
+          <LoadingSpinner />
         ) : (
-          <BookGrid books={filteredBooks} cart={cart} />
+          <BookGrid books={filteredBooks.slice(0, visibleBooks)} cart={cart} />
         )}
       </div>
+      {visibleBooks < filteredBooks.length && (
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={handleLoadMore}
+            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Load More
+          </button>
+        </div>
+      )}
       <Features />
       <Footer />
     </div>
