@@ -27,3 +27,15 @@ export interface IAddAddressRequest {
   pincode: number;
   phoneNumber: string;
 }
+
+export interface IGetPriceDetailsRequest {
+  cartId: number;
+  coupon?: string;
+}
+
+export interface IGetPriceDetailsResponse {
+  cartPrice: number;
+  discountAmount: number;
+  deliveryCharge: number;
+  finalPrice: number;
+}

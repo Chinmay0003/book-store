@@ -2,14 +2,15 @@ import axios from "axios";
 import { BACKEND_API } from "@/lib/constants";
 import { PaymentInitiationResponse } from "@/lib/payments/types";
 
-export const initiatePayment = async (bookIds: number[], addressId: number) => {
+export const initiatePayment = async (cartId: number, addressId: number, coupon?: string) => {
   try {
-    console.log("Initiating payment for bookId:", bookIds, "and addressId:", addressId);
+    console.log("Initiating payment for cartId:", cartId, "and addressId:", addressId);
     const res = await axios.post<PaymentInitiationResponse>(
       `${BACKEND_API}/payment/initiate`,
       {
-        bookIds,
+        cartId,
         addressId,
+        coupon,
       },
     );
 
