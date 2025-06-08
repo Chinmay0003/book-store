@@ -230,16 +230,15 @@ export default function BookGrid({ books, cart }: BookGridProps) {
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex justify-start mb-5 mt-5">
             Fiter age by group
           </h2>
-          <div className="w-full px-4 md:px-0">
+          <div className="w-full overflow-x-auto custom-scrollbar sm:flex sm:justify-center sm:overflow-visible">
             {/* Grid Container */}
             <div
-              className="flex flex-nowrap overflow-x-auto custom-scrollbar gap-8 py-2 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 sm:gap-16"
+              className="inline-flex flex-nowrap gap-8 px-4 py-2 sm:grid sm:w-auto sm:grid-cols-2 sm:gap-16 sm:px-0 md:grid-cols-3 lg:grid-cols-3"
               style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
               {Object.keys(bookCategories).map((category: string) => (
                 <div
                   key={category}
-                  className="transform transition-all duration-300 hover:scale-105 relative"
-                  style={{ minWidth: "260px", maxWidth: "280px" }}
+                  className="transform transition-all duration-300 hover:scale-105 relative min-w-[220px] max-w-[240px] sm:min-w-[260px] sm:max-w-[280px]"
                   onClick={() => handleCategoryClick(category)}>
                   {loadingCategory === category && (
                     <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
