@@ -60,6 +60,7 @@ export default function SearchPage() {
   const [priceFilter, setPriceFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   useEffect(() => {
     async function getBooks() {
@@ -139,10 +140,11 @@ export default function SearchPage() {
           </span>
           <span className="text-xl text-gray-700">for "{query}"</span>
         </div>
-        <div className="flex items-center justify-center gap-3 mb-10 mt-10">
+        <div className="flex items-center justify-center gap-3 mb-10 mt-10 z-999">
           <FilterIcon className="w-5 h-5 text-blue-500" />
           <span className="text-gray-700 font-semibold">Filter by Price:</span>
-          <div className="flex gap-2">
+          {/* Desktop buttons */}
+          <div className="hidden md:flex flex-wrap justify-center gap-2">
             {PRICE_RANGES.map((range) => (
               <button
                 key={range.value}
@@ -158,13 +160,68 @@ export default function SearchPage() {
               </button>
             ))}
           </div>
+          {/* Mobile dropdown */}
+          <div className="relative md:hidden">
+            <button
+              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+              className="px-4 py-2 rounded-full text-sm font-semibold border shadow-sm bg-white text-gray-800 border-gray-300 hover:bg-gray-100 w-48 text-left flex justify-between items-center">
+              <span>
+                {PRICE_RANGES.find((r) => r.value === priceFilter)?.label ||
+                  "All Prices"}
+              </span>
+              <svg
+                className={`w-4 h-4 transition-transform ${
+                  showFilterDropdown ? "rotate-180" : ""
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            {showFilterDropdown && (
+              <div className="absolute z-20 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-md">
+                <button
+                  onClick={() => {
+                    setPriceFilter("");
+                    setShowFilterDropdown(false);
+                  }}
+                  className={`block w-full text-left px-4 py-2 text-sm ${
+                    !priceFilter
+                      ? "bg-blue-500 text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}>
+                  All Prices
+                </button>
+                {PRICE_RANGES.map((range) => (
+                  <button
+                    key={range.value}
+                    onClick={() => {
+                      setPriceFilter(range.value);
+                      setShowFilterDropdown(false);
+                    }}
+                    className={`block w-full text-left px-4 py-2 text-sm ${
+                      priceFilter === range.value
+                        ? "bg-blue-500 text-white"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}>
+                    {range.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         <div className="relative w-full flex flex-col items-center">
           <div className="flex items-center justify-center max-w-12xl">
             <button
               onClick={() => handlePageChange("prev")}
               disabled={currentPage === 1 || isAnimating}
-              className={`p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+              className={`hidden md:flex p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                 currentPage === 1 || isAnimating ? "opacity-50 cursor-not-allowed" : ""
               }`}
               aria-label="Previous page">
@@ -204,7 +261,7 @@ export default function SearchPage() {
             <button
               onClick={() => handlePageChange("next")}
               disabled={currentPage === totalPages || isAnimating}
-              className={`p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+              className={`hidden md:flex p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                 currentPage === totalPages || isAnimating
                   ? "opacity-50 cursor-not-allowed"
                   : ""
@@ -234,6 +291,20 @@ export default function SearchPage() {
             ),
           )}
         </div>
+        {totalPages > 1 && (
+          <div className="md:hidden flex justify-center mt-8">
+            <button
+              onClick={() => handlePageChange("next")}
+              disabled={currentPage === totalPages || isAnimating}
+              className={`px-6 py-3 rounded-full font-semibold border shadow-sm transition-all duration-200 ${
+                currentPage === totalPages || isAnimating
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-black text-white border-black hover:bg-gray-800"
+              }`}>
+              Next Page
+            </button>
+          </div>
+        )}
         <style jsx global>{`
           .custom-scrollbar::-webkit-scrollbar {
             display: none;

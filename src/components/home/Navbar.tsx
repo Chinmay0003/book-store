@@ -18,12 +18,14 @@ export default function Navbar() {
   return (
     <>
       {/* Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md max-w-8xl mx-auto flex items-center justify-between py-6 px-5 text-black backdrop-blur-md transition-all duration-300">
+      <nav className="fixed top-0 left-0 right-0 z-1200 bg-white shadow-md max-w-8xl mx-auto flex items-center justify-between py-4 px-4 md:px-6 text-black backdrop-blur-md transition-all duration-300">
         {/* Logo */}
         <Link href={"/"}>
           <div className="flex items-center gap-3">
             <Image src="/favicon.ico" alt="Mybestkid Logo" width={40} height={40} />
-            <span className="text-3xl font-bold text-[#23395d]">Mybestkid</span>
+            <span className="text-2xl md:text-3xl font-bold text-[#23395d]">
+              Mybestkid
+            </span>
           </div>
         </Link>
 
@@ -103,22 +105,22 @@ export default function Navbar() {
 
         {/* Mobile Nav Dropdown */}
         {mobileNavOpen && (
-          <div className="absolute top-full left-0 right-0 w-full bg-white border-t border-gray-200 shadow-lg z-50 flex flex-col p-4 md:hidden text-black">
+          <div className="absolute top-full left-0 right-0 w-full bg-white border-t border-gray-200 shadow-lg z-50 flex flex-col p-4 md:hidden text-black text-center">
             {user ? (
               <>
                 <button
                   onClick={() => setMobileNavOpen(false)}
-                  className="mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
+                  className="mb-4 border border-black rounded-lg px-4 py-3 text-lg hover:bg-gray-100 transition">
                   Cart ({cart.length || 0})
                 </button>
                 <a
                   href="/contact"
-                  className="mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
+                  className="mb-4 border border-black rounded-lg px-4 py-3 text-lg hover:bg-gray-100 transition">
                   Contact Us
                 </a>
                 <button
                   onClick={() => setMobileNavOpen(false)}
-                  className="flex items-center gap-2 mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
+                  className="flex items-center justify-center gap-2 mb-4 border border-black rounded-lg px-4 py-3 text-lg hover:bg-gray-100 transition">
                   Sign out
                 </button>
                 {/* Add User Icon */}
@@ -127,25 +129,25 @@ export default function Navbar() {
                   alt="User Icon"
                   width={40}
                   height={40}
-                  className="rounded-full border border-gray-300"
+                  className="rounded-full border border-gray-300 mx-auto"
                 />
               </>
             ) : (
               <>
                 <a
                   href="/"
-                  className="mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition"
+                  className="mb-4 border border-black rounded-lg px-4 py-3 text-lg hover:bg-gray-100 transition"
                   onClick={() => setMobileNavOpen(false)}>
                   HOME
                 </a>
                 <a
                   href="/contact"
-                  className="mb-4 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
+                  className="mb-4 border border-black rounded-lg px-4 py-3 text-lg hover:bg-gray-100 transition">
                   Contact Us
                 </a>
                 <a
                   onClick={() => setMobileNavOpen(false)}
-                  className="flex items-center gap-2 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
+                  className="flex items-center justify-center gap-2 border border-black rounded-lg px-4 py-3 text-lg hover:bg-gray-100 transition">
                   Sign in
                 </a>
               </>

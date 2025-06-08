@@ -82,12 +82,12 @@ export default function BookGrid({ books, cart }: BookGridProps) {
   return (
     <section
       id="book-collection"
-      className="relative mt-0 px-2 py-10 bg-gray-50 w-full mx-auto flex flex-col items-center text-center">
-      <h2 className="text-3xl font-bold text-center mb-10 text-gray-800 tracking-tight drop-shadow-sm">
+      className="relative mt-0 px-4 md:px-2 py-10 bg-gray-50 w-full mx-auto flex flex-col items-center text-center">
+      <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-10 text-gray-800 tracking-tight drop-shadow-sm">
         Our Premium Book Collection
       </h2>
       {/* Search Bar */}
-      <div className="relative w-full max-w-xl mb-8">
+      <div className="relative w-full max-w-md md:max-w-xl mb-8">
         {/* Search Icon */}
         <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
           <svg
@@ -120,7 +120,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
             }
           }}
           onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-          className="w-full pl-12 pr-12 py-3 rounded-full shadow-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-lg"
+          className="w-full pl-10 pr-10 py-2 md:pl-12 md:pr-12 md:py-3 rounded-full shadow-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-base md:text-lg"
         />
 
         {/* Clear Button */}
@@ -188,16 +188,16 @@ export default function BookGrid({ books, cart }: BookGridProps) {
           </div>
         )}
       </div>
-      <div className="w-full flex-col justify-start py-10 px-10">
+      <div className="w-full flex-col justify-start py-10 px-4 md:px-10">
         <div className="w-full flex flex-col items-center gap-2 max-w-10xl">
-          <h2 className="text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex justify-start mb-5 mt-5">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex justify-start mb-5 mt-5">
             Product by category
           </h2>
           <div className="flex  justify-center">
             {/* Grid Container */}
             <div
               ref={carouselRef}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-16 w-full py-2 px-2 md:px-8"
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8 md:gap-16 w-full py-2 px-2 md:px-8"
               style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
               {Object.keys(bookCategories).map((category: string) => (
                 <div
@@ -217,9 +217,9 @@ export default function BookGrid({ books, cart }: BookGridProps) {
         </div>
       </div>
 
-      <div className="w-full flex-col justify-start px-10">
+      <div className="w-full flex-col justify-start px-4 md:px-10">
         <div className="relative w-full flex flex-col items-center gap-2">
-          <h2 className="text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex items-center justify-center max-w-10xl mb-5 mt-5">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex items-center justify-center max-w-10xl mb-5 mt-5">
             Top Picks of the Day
           </h2>
           <div className="flex items-center justify-center max-w-12xl">
@@ -237,7 +237,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
             {/* Grid Container */}
             <div
               ref={carouselRef}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full py-2 px-2 md:px-8"
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 w-full py-2 px-2 md:px-8"
               style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
               {books
                 .slice((currentPage - 1) * booksPerPage, currentPage * booksPerPage)

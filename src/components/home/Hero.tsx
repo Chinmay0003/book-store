@@ -22,7 +22,7 @@ export default function Hero() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="w-full py-2"
       >
-        <div className="text-center text-2xl md:text-6xl font-bold tracking-wide bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+        <div className="text-center text-4xl md:text-6xl font-bold tracking-wide bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 bg-clip-text text-transparent">
           #NoScreenTime
         </div>
       </motion.div>
@@ -34,20 +34,20 @@ export default function Hero() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="mx-auto mt-4 max-w-screen-md rounded-2xl bg-gradient-to-r from-yellow-300 to-yellow-400 shadow-md px-6 py-3 text-center"
       >
-        <p className="text-[#22223b] text-base md:text-3xl font-semibold tracking-wide">
+        <p className="text-[#22223b] text-lg md:text-3xl font-semibold tracking-wide">
           🎉 FREE DELIVERY for Orders Above ₹599!
         </p>
       </motion.div>
       
       {/* Hero Section */}
-      <div className="relative max-w-7xl mx-auto px-4 py-20">
+      <div className="relative max-w-7xl mx-auto px-4 py-10 md:py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           {/* Left - Text */}
           <div className="text-center md:text-left">
-            <h2 className="text-3xl md:text-5xl font-bold text-[#23395d] mb-6 leading-tight">
+            <h2 className="text-4xl md:text-5xl font-bold text-[#23395d] mb-6 leading-tight">
               Mybestkid makes reading fun and safe for every child.
             </h2>
-            <p className="text-md md:text-lg text-[#22223b] max-w-xl mx-auto md:mx-0">
+            <p className="text-lg md:text-xl text-[#22223b] max-w-xl mx-auto md:mx-0">
               Discover, enjoy, and share the best books—curated for curious young minds and caring families.
             </p>
           </div>
