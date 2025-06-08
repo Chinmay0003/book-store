@@ -26,11 +26,23 @@ export default function BookGrid({ books, cart }: BookGridProps) {
   const [loadingBookId, setLoadingBookId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const booksPerPage = 8; // Changed to 8 books per page (2 rows of 4)
   const carouselRef = useRef<HTMLDivElement>(null);
   const filteredBooks = books.filter((book) =>
     book.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+  useEffect(() => {
+    if (searchQuery.trim() !== "") {
+      setIsSearching(true);
+      const timer = setTimeout(() => {
+        setIsSearching(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      setIsSearching(false);
+    }
+  }, [searchQuery]);
   const totalPages = Math.ceil(books.length / booksPerPage);
   const handlePageChange = (direction: "next" | "prev") => {
     if (isAnimating) return;
@@ -88,6 +100,11 @@ export default function BookGrid({ books, cart }: BookGridProps) {
     router.push(`/category/${encodeURIComponent(category)}`);
   };
 
+  const handleBookSelect = (bookId: number) => {
+    setLoadingBookId(bookId);
+    router.push(`/book?id=${bookId}`);
+    setShowDropdown(false);
+  };
   return (
     <section
       id="book-collection"
@@ -157,54 +174,57 @@ export default function BookGrid({ books, cart }: BookGridProps) {
         {/* Dropdown */}
         {showDropdown && searchQuery.trim() !== "" && (
           <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-md max-h-64 overflow-y-auto">
-            {filteredBooks.map((book, index) => (
-              <div key={book.id}>
-                <div
-                  className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150"
-                  onMouseDown={() => {
-                    setLoadingBookId(book.id);
-                    router.push(`/book?id=${book.id}`);
-                    setShowDropdown(false);
-                  }}
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      setLoadingBookId(book.id);
-                      router.push(`/book?id=${book.id}`);
-                      setShowDropdown(false);
-                    }
-                  }}>
-                  {loadingBookId === book.id && (
-                    <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
-                      <LoadingSpinner size="h-8 w-8" />
-                    </div>
-                  )}
-                  <div
-                    className={`flex items-center gap-4 ${
-                      loadingBookId === book.id ? "opacity-50" : ""
-                    }`}>
-                    {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
-                      <img
-                        src={
-                          book.bookMedia.filter((e) => e.type === "image")[0]
-                            .metadata.s3_url
-                        }
-                        // alt={book.name}
-                        className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-md bg-gray-100 border border-gray-200"></div>
-                    )}
-                    <span>{book.name}</span>
-                  </div>
-                </div>
-                {index < books.length - 1 && (
-                  <hr className="mx-4 border-t border-gray-200" />
-                )}
+            {isSearching ? (
+              <div className="flex justify-center items-center py-4">
+                <LoadingSpinner size="h-8 w-8" />
               </div>
-            ))}
-            {books.length === 0 && (
-              <div className="px-4 py-3 text-gray-500">No matching books found</div>
+            ) : filteredBooks.length > 0 ? (
+              filteredBooks.map((book, index) => (
+                <div key={book.id}>
+                  <div
+                    className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150"
+                    onClick={() => handleBookSelect(book.id)}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleBookSelect(book.id);
+                      }
+                    }}>
+                    {loadingBookId === book.id && (
+                      <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
+                        <LoadingSpinner size="h-8 w-8" />
+                      </div>
+                    )}
+                    <div
+                      className={`flex items-center gap-4 ${
+                        loadingBookId === book.id ? "opacity-50" : ""
+                      }`}>
+                      {book.bookMedia.filter((e) => e.type === "image").length >
+                      0 ? (
+                        <img
+                          src={
+                            book.bookMedia.filter(
+                              (e) => e.type === "image",
+                            )[0].metadata.s3_url
+                          }
+                          // alt={book.name}
+                          className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-md bg-gray-100 border border-gray-200"></div>
+                      )}
+                      <span>{book.name}</span>
+                    </div>
+                  </div>
+                  {index < filteredBooks.length - 1 && (
+                    <hr className="mx-4 border-t border-gray-200" />
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="px-4 py-3 text-gray-500">
+                No matching books found
+              </div>
             )}
           </div>
         )}
