@@ -2,7 +2,6 @@ import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import userImg from "../../../public/bookImg.jpg";
 import userIcon from "@/assets/userIcon.jpg";
 import { useAuthStore, useCartStore } from "@/lib/books/bookStore";
 import Link from "next/link";
@@ -34,19 +33,35 @@ export default function Navbar() {
           className="md:hidden p-2 rounded focus:outline-none text-black"
           aria-label="Open menu"
           onClick={() => setMobileNavOpen((v) => !v)}>
-          <svg
-            width="28"
-            height="28"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
+          {mobileNavOpen ? (
+            <svg
+              width="28"
+              height="28"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          ) : (
+            <svg
+              width="28"
+              height="28"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          )}
         </button>
 
         {/* Desktop Nav */}
