@@ -284,7 +284,7 @@ export default function SearchPage() {
             </button>
           </div>
         </div>
-        <div className="flex items-center justify-center mt-8 space-x-2">
+        <div className="hidden md:flex items-center justify-center mt-8 space-x-2">
           {getPaginationDots(currentPage, totalPages).map((dot, idx) =>
             dot === "..." ? (
               <span key={"ellipsis-" + idx} className="w-4 text-center text-gray-400">
@@ -305,16 +305,36 @@ export default function SearchPage() {
           )}
         </div>
         {totalPages > 1 && (
-          <div className="md:hidden flex justify-center mt-8">
+          <div className="flex md:hidden items-center justify-center mt-8 space-x-2">
+            <button
+              onClick={() => handlePageChange("prev")}
+              disabled={currentPage === 1 || isAnimating}
+              className="px-4 py-2 rounded-full font-semibold border shadow-sm transition-all duration-200 bg-black text-white border-black hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed">
+              Prev
+            </button>
+            {getPaginationDots(currentPage, totalPages).map((dot, idx) =>
+              dot === "..." ? (
+                <span key={"ellipsis-mobile-" + idx} className="w-4 text-center text-gray-400">
+                  …
+                </span>
+              ) : (
+                <button
+                  key={"dot-mobile-" + idx}
+                  onClick={() => handleDotClick(dot as number)}
+                  className={`w-8 h-8 rounded-full transition-all duration-300 focus:outline-none ${
+                    currentPage === dot
+                      ? "bg-blue-600 text-white scale-110"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}>
+                  {dot}
+                </button>
+              ),
+            )}
             <button
               onClick={() => handlePageChange("next")}
               disabled={currentPage === totalPages || isAnimating}
-              className={`px-6 py-3 rounded-full font-semibold border shadow-sm transition-all duration-200 ${
-                currentPage === totalPages || isAnimating
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-black text-white border-black hover:bg-gray-800"
-              }`}>
-              Next Page
+              className="px-4 py-2 rounded-full font-semibold border shadow-sm transition-all duration-200 bg-black text-white border-black hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed">
+              Next
             </button>
           </div>
         )}

@@ -234,7 +234,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
         <div className="w-full flex flex-col items-center gap-2 max-w-10xl">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex items-center justify-start mb-5 mt-5 gap-2">
             <FunnelIcon className="w-6 h-6 text-blue-600" />
-            Filter age by group
+            Filter by Age group
           </h2>
           <div className="w-full overflow-x-auto custom-scrollbar sm:flex sm:justify-center sm:overflow-visible scroll-snap-x mandatory scroll-pl-4">
             {/* Grid Container */}
