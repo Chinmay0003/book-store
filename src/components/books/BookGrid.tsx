@@ -23,6 +23,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
   const [loadingCategory, setLoadingCategory] = useState<string | null>(null);
+  const [loadingBookId, setLoadingBookId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const booksPerPage = 8; // Changed to 8 books per page (2 rows of 4)
@@ -161,29 +162,41 @@ export default function BookGrid({ books, cart }: BookGridProps) {
                 <div
                   className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150"
                   onMouseDown={() => {
+                    setLoadingBookId(book.id);
                     router.push(`/book?id=${book.id}`);
                     setShowDropdown(false);
                   }}
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
+                      setLoadingBookId(book.id);
                       router.push(`/book?id=${book.id}`);
                       setShowDropdown(false);
                     }
                   }}>
-                  {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
-                    <img
-                      src={
-                        book.bookMedia.filter((e) => e.type === "image")[0].metadata
-                          .s3_url
-                      }
-                      // alt={book.name}
-                      className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-md bg-gray-100 border border-gray-200"></div>
+                  {loadingBookId === book.id && (
+                    <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
+                      <LoadingSpinner size="h-8 w-8" />
+                    </div>
                   )}
-                  <span>{book.name}</span>
+                  <div
+                    className={`flex items-center gap-4 ${
+                      loadingBookId === book.id ? "opacity-50" : ""
+                    }`}>
+                    {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
+                      <img
+                        src={
+                          book.bookMedia.filter((e) => e.type === "image")[0]
+                            .metadata.s3_url
+                        }
+                        // alt={book.name}
+                        className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-md bg-gray-100 border border-gray-200"></div>
+                    )}
+                    <span>{book.name}</span>
+                  </div>
                 </div>
                 {index < books.length - 1 && (
                   <hr className="mx-4 border-t border-gray-200" />
@@ -260,8 +273,17 @@ export default function BookGrid({ books, cart }: BookGridProps) {
                 .slice((currentPage - 1) * booksPerPage, currentPage * booksPerPage)
                 .map((book) => (
                   <Link href={`/book?id=${book.id}`} key={book.id}>
-                    <div className="transform transition-all duration-300 hover:scale-105">
-                      <BookCard book={book} cart={cart} />
+                    <div
+                      className="transform transition-all duration-300 hover:scale-105 relative"
+                      onClick={() => setLoadingBookId(book.id)}>
+                      {loadingBookId === book.id && (
+                        <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
+                          <LoadingSpinner size="h-12 w-12" />
+                        </div>
+                      )}
+                      <div className={loadingBookId === book.id ? "opacity-50" : ""}>
+                        <BookCard book={book} cart={cart} />
+                      </div>
                     </div>
                   </Link>
                 ))}

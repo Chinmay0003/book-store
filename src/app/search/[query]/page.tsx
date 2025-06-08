@@ -14,6 +14,7 @@ import {
 import Navbar from "@/components/home/Navbar";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 // Helper for pagination dots (if needed)
 function getPaginationDots(current: number, total: number) {
@@ -61,6 +62,7 @@ export default function SearchPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [loadingBookId, setLoadingBookId] = useState<number | null>(null);
 
   useEffect(() => {
     async function getBooks() {
@@ -250,8 +252,19 @@ export default function SearchPage() {
                     <Link href={`/book?id=${book.id}`} key={book.id}>
                       <div
                         key={book.id}
-                        className="transition-transform hover:-translate-y-1 hover:shadow-xl">
-                        <BookCard book={book} cart={cart} />
+                        className="transition-transform hover:-translate-y-1 hover:shadow-xl relative"
+                        onClick={() => setLoadingBookId(book.id)}>
+                        {loadingBookId === book.id && (
+                          <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
+                            <LoadingSpinner size="h-12 w-12" />
+                          </div>
+                        )}
+                        <div
+                          className={
+                            loadingBookId === book.id ? "opacity-50" : ""
+                          }>
+                          <BookCard book={book} cart={cart} />
+                        </div>
                       </div>
                     </Link>
                   ))}

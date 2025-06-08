@@ -10,6 +10,8 @@ import { IBookData } from "@/lib/books/types";
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import Navbar from "@/components/home/Navbar";
 import Link from "next/link";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+
 function getPaginationDots(current: number, total: number) {
   // Show max 5 dots: [1, ..., current-1, current, current+1, ..., total]
   if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
@@ -53,6 +55,7 @@ const SubcategoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [priceFilter, setPriceFilter] = useState<string>("");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [loadingBookId, setLoadingBookId] = useState<number | null>(null);
 
   const filteredBooks = books.filter((book) =>
     book.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -197,24 +200,36 @@ const SubcategoryPage = () => {
               {filteredBooks.map((book, index) => (
                 <div key={book.id}>
                   <div
-                    className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150"
+                    className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150 relative"
                     onMouseDown={() => {
+                      setLoadingBookId(book.id);
                       router.push(`/book?id=${book.id}`);
                       setShowDropdown(false); // Close the dropdown on click
                     }}>
-                    {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
-                      <img
-                        src={
-                          book.bookMedia.filter((e) => e.type === "image")[0].metadata
-                            .s3_url
-                        }
-                        // alt={book.name}
-                        className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-md bg-gray-100 border border-gray-200"></div>
+                    {loadingBookId === book.id && (
+                      <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
+                        <LoadingSpinner size="h-8 w-8" />
+                      </div>
                     )}
-                    <span>{book.name}</span>
+                    <div
+                      className={`flex items-center gap-4 ${
+                        loadingBookId === book.id ? "opacity-50" : ""
+                      }`}>
+                      {book.bookMedia.filter((e) => e.type === "image").length >
+                      0 ? (
+                        <img
+                          src={
+                            book.bookMedia.filter((e) => e.type === "image")[0]
+                              .metadata.s3_url
+                          }
+                          // alt={book.name}
+                          className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-md bg-gray-100 border border-gray-200"></div>
+                      )}
+                      <span>{book.name}</span>
+                    </div>
                   </div>
                   {index < books.length - 1 && (
                     <hr className="mx-4 border-t border-gray-200" />
@@ -353,8 +368,20 @@ const SubcategoryPage = () => {
                         className="transform transition-all duration-300 hover:scale-105"
                         style={{ minWidth: "260px", maxWidth: "280px" }}>
                         <Link href={`/book?id=${book.id}`} key={book.id}>
-                          <div className="bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)]">
-                            <BookCard book={book} cart={carts} />
+                          <div
+                            className="bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)] relative"
+                            onClick={() => setLoadingBookId(book.id)}>
+                            {loadingBookId === book.id && (
+                              <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
+                                <LoadingSpinner size="h-12 w-12" />
+                              </div>
+                            )}
+                            <div
+                              className={
+                                loadingBookId === book.id ? "opacity-50" : ""
+                              }>
+                              <BookCard book={book} cart={carts} />
+                            </div>
                           </div>
                         </Link>
                       </div>
