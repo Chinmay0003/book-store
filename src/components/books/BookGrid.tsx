@@ -230,11 +230,10 @@ export default function BookGrid({ books, cart }: BookGridProps) {
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex justify-start mb-5 mt-5">
             Fiter age by group
           </h2>
-          <div className="flex  justify-center">
+          <div className="w-full px-4 md:px-0">
             {/* Grid Container */}
             <div
-              ref={carouselRef}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8 md:gap-16 w-full py-2 px-2 md:px-8"
+              className="flex flex-nowrap overflow-x-auto custom-scrollbar gap-8 py-2 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 sm:gap-16"
               style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
               {Object.keys(bookCategories).map((category: string) => (
                 <div
