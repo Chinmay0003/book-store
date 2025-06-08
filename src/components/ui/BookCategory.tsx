@@ -25,7 +25,9 @@ const BookCategory = ({ category, img }: BookCategoryProps) => {
         <div className="flex flex-col items-center gap-3 w-full mb-4 px-4 mt-4">
           <div className="flex items-center gap-2 w-full">
             <BookOpen className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg md:text-xl bold text-[#22223b] truncate">{category}</h2>
+            <h2 className="text-lg md:text-xl bold text-[#22223b] truncate">
+              {category}
+            </h2>
           </div>
         </div>
       </div>

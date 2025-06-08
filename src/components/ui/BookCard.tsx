@@ -27,7 +27,7 @@ export default function BookCard({ book, cart }: BookCardProps) {
 
   return (
     <>
-      <div className="bg-white border border-blue-100 rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 flex flex-col items-center p-0 mx-auto min-h-[340px] md:min-h-[370px] max-w-[280px] md:max-w-xs hover:scale-105 overflow-hidden relative">
+      <div className="bg-white border border-blue-100 rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 flex flex-col items-center p-0 mx-auto min-h-[320px] sm:min-h-[340px] md:min-h-[370px] w-full hover:scale-105 overflow-hidden relative">
         {/* New Badge */}
         {isNew && (
           <div className="absolute top-2 right-2 z-20 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded shadow-lg">

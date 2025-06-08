@@ -199,13 +199,11 @@ export default function BookGrid({ books, cart }: BookGridProps) {
                       className={`flex items-center gap-4 ${
                         loadingBookId === book.id ? "opacity-50" : ""
                       }`}>
-                      {book.bookMedia.filter((e) => e.type === "image").length >
-                      0 ? (
+                      {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
                         <img
                           src={
-                            book.bookMedia.filter(
-                              (e) => e.type === "image",
-                            )[0].metadata.s3_url
+                            book.bookMedia.filter((e) => e.type === "image")[0].metadata
+                              .s3_url
                           }
                           // alt={book.name}
                           className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
@@ -222,9 +220,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
                 </div>
               ))
             ) : (
-              <div className="px-4 py-3 text-gray-500">
-                No matching books found
-              </div>
+              <div className="px-4 py-3 text-gray-500">No matching books found</div>
             )}
           </div>
         )}
@@ -232,7 +228,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
       <div className="w-full flex-col justify-start py-10 px-4 md:px-10">
         <div className="w-full flex flex-col items-center gap-2 max-w-10xl">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex justify-start mb-5 mt-5">
-            Product by category
+            Fiter age by group
           </h2>
           <div className="flex  justify-center">
             {/* Grid Container */}
@@ -266,18 +262,17 @@ export default function BookGrid({ books, cart }: BookGridProps) {
           </div>
         </div>
       </div>
-
-      <div className="w-full flex-col justify-start px-4 md:px-10">
+      <div className="w-full flex-col justify-start px-2 sm:px-4 md:px-10">
         <div className="relative w-full flex flex-col items-center gap-2">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex items-center justify-center max-w-10xl mb-5 mt-5">
             Top Picks of the Day
           </h2>
-          <div className="flex items-center justify-center max-w-12xl">
+          <div className="flex w-full items-center justify-center max-w-12xl">
             {/* Left Navigation Button */}
             <button
               onClick={() => handlePageChange("prev")}
               disabled={currentPage === 1 || isAnimating}
-              className={`p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+              className={`hidden md:flex p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                 currentPage === 1 || isAnimating ? "opacity-50 cursor-not-allowed" : ""
               }`}
               aria-label="Previous page">
@@ -287,7 +282,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
             {/* Grid Container */}
             <div
               ref={carouselRef}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 w-full py-2 px-2 md:px-8"
+              className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 w-full py-2 px-1 md:px-8"
               style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
               {books
                 .slice((currentPage - 1) * booksPerPage, currentPage * booksPerPage)
@@ -313,7 +308,7 @@ export default function BookGrid({ books, cart }: BookGridProps) {
             <button
               onClick={() => handlePageChange("next")}
               disabled={currentPage === totalPages || isAnimating}
-              className={`p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+              className={`hidden md:flex p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                 currentPage === totalPages || isAnimating
                   ? "opacity-50 cursor-not-allowed"
                   : ""
@@ -323,8 +318,21 @@ export default function BookGrid({ books, cart }: BookGridProps) {
             </button>
           </div>
         </div>
+
+        {/* Mobile-only "Next Page" button */}
+        <div className="mt-6 flex md:hidden justify-center">
+          {currentPage < totalPages && (
+            <button
+              onClick={() => handlePageChange("next")}
+              disabled={isAnimating}
+              className="px-6 py-3 rounded-full bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700 transition-all duration-300">
+              Show Next Page
+            </button>
+          )}
+        </div>
+
         {/* Pagination Indicator */}
-        <div className="flex items-center justify-center mt-8 space-x-2">
+        <div className="hidden md:flex items-center justify-center mt-8 space-x-2">
           {getPaginationDots(currentPage, totalPages).map((dot, idx) =>
             dot === "..." ? (
               <span key={"ellipsis-" + idx} className="w-4 text-center text-gray-400">
