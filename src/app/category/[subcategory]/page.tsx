@@ -265,7 +265,7 @@ const SubcategoryPage = () => {
           )}
         </div>
 
-        <div className="w-full flex-col items-center px-10">
+        <div className="w-full flex-col items-center">
           <h2 className="text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm mt-5 mb-5">
             Product by category {subcategory}
           </h2>
@@ -295,7 +295,7 @@ const SubcategoryPage = () => {
             <div className="relative md:hidden">
               <button
                 onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="px-4 py-2 rounded-full text-sm font-semibold border shadow-sm bg-white text-gray-800 border-gray-300 hover:bg-gray-100 w-48 text-left flex justify-between items-center">
+                className="px-2 py-2 rounded-full text-sm font-semibold border shadow-sm bg-white text-gray-800 border-gray-300 hover:bg-gray-100 w-48 text-left flex justify-between items-center">
                 <span>
                   {PRICE_RANGES.find((r) => r.value === priceFilter)?.label ||
                     "All Prices"}
@@ -347,7 +347,7 @@ const SubcategoryPage = () => {
               )}
             </div>
           </div>
-          <div className="relative w-full flex flex-col items-center">
+          <div className="w-full flex-col justify-start px-2 sm:px-2 md:px-10">
             <div className="flex items-center justify-center max-w-12xl">
               {/* Left Navigation Button */}
               <button
@@ -377,7 +377,7 @@ const SubcategoryPage = () => {
               ) : (
                 <div
                   ref={carouselRef}
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full py-2 px-2 md:px-8"
+                  className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6 w-full py-2 md:px-8"
                   style={{
                     scrollBehavior: "smooth",
                     WebkitOverflowScrolling: "touch",
@@ -387,8 +387,7 @@ const SubcategoryPage = () => {
                     .map((book) => (
                       <div
                         key={book.id}
-                        className="transform transition-all duration-300 hover:scale-105"
-                        style={{ minWidth: "260px", maxWidth: "280px" }}>
+                        className="transform transition-all duration-300 hover:scale-105">
                         <Link href={`/book?id=${book.id}`} key={book.id}>
                           <div
                             className="bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)] relative"
