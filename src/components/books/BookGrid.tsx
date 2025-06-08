@@ -15,6 +15,10 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 interface BookGridProps {
   books: IGetAllBooksResponse["bookData"];
   cart: number[];
+  totalPages?: number;
+  currentPage?: number;
+  handlePageChange?: (direction: "next" | "prev") => void;
+  handleDotClick?: (page: number) => void;
 }
 
 function getPaginationDots(current: number, total: number) {
@@ -24,8 +28,15 @@ function getPaginationDots(current: number, total: number) {
   return [1, "...", current, "...", total];
 }
 
-export default function BookGrid({ books, cart }: BookGridProps) {
-  const [currentPage, setCurrentPage] = useState(1);
+export default function BookGrid({
+  books,
+  cart,
+  totalPages: totalPagesProp,
+  currentPage: currentPageProp,
+  handlePageChange: handlePageChangeProp,
+  handleDotClick: handleDotClickProp,
+}: BookGridProps) {
+  const [currentPage, setCurrentPage] = useState(currentPageProp ?? 1);
   const [isAnimating, setIsAnimating] = useState(false);
   const [loadingCategory, setLoadingCategory] = useState<string | null>(null);
   const [loadingBookId, setLoadingBookId] = useState<number | null>(null);
@@ -48,38 +59,48 @@ export default function BookGrid({ books, cart }: BookGridProps) {
       setIsSearching(false);
     }
   }, [searchQuery]);
-  const totalPages = Math.ceil(books.length / booksPerPage);
-  const handlePageChange = (direction: "next" | "prev") => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    const newPage = direction === "next" ? currentPage + 1 : currentPage - 1;
-    if (carouselRef.current) {
-      const scrollAmount = carouselRef.current.offsetWidth;
-      carouselRef.current.scrollBy({
-        left: direction === "next" ? scrollAmount : -scrollAmount,
-        behavior: "smooth",
-      });
+
+  useEffect(() => {
+    if (currentPageProp) {
+      setCurrentPage(currentPageProp);
     }
-    setCurrentPage(newPage);
-
-    // Reset animation state after transition
-    setTimeout(() => {
-      setIsAnimating(false);
-    }, 500);
-  };
-
-  const handleDotClick = (page: number) => {
-    if (!isAnimating && typeof page === "number") {
-      setCurrentPage(page);
+  }, [currentPageProp]);
+  const totalPages = totalPagesProp ?? Math.ceil(books.length / booksPerPage);
+  const handlePageChange =
+    handlePageChangeProp ??
+    ((direction: "next" | "prev") => {
+      if (isAnimating) return;
+      setIsAnimating(true);
+      const newPage = direction === "next" ? currentPage + 1 : currentPage - 1;
       if (carouselRef.current) {
-        const scrollAmount = carouselRef.current.offsetWidth * (page - 1);
-        carouselRef.current.scrollTo({
-          left: scrollAmount,
+        const scrollAmount = carouselRef.current.offsetWidth;
+        carouselRef.current.scrollBy({
+          left: direction === "next" ? scrollAmount : -scrollAmount,
           behavior: "smooth",
         });
       }
-    }
-  };
+      setCurrentPage(newPage);
+
+      // Reset animation state after transition
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 500);
+    });
+
+  const handleDotClick =
+    handleDotClickProp ??
+    ((page: number) => {
+      if (!isAnimating && typeof page === "number") {
+        setCurrentPage(page);
+        if (carouselRef.current) {
+          const scrollAmount = carouselRef.current.offsetWidth * (page - 1);
+          carouselRef.current.scrollTo({
+            left: scrollAmount,
+            behavior: "smooth",
+          });
+        }
+      }
+    });
 
   const bookCategories: Record<string, { img: string; description: string }> = {
     Playful: {
@@ -289,8 +310,11 @@ export default function BookGrid({ books, cart }: BookGridProps) {
               ref={carouselRef}
               className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 w-full py-2 px-1 md:px-8"
               style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
-              {books
-                .slice((currentPage - 1) * booksPerPage, currentPage * booksPerPage)
+              {(handlePageChangeProp ? books : filteredBooks)
+                .slice(
+                  (currentPage - 1) * booksPerPage,
+                  currentPage * booksPerPage,
+                )
                 .map((book) => (
                   <Link href={`/book?id=${book.id}`} key={book.id}>
                     <div
@@ -325,16 +349,42 @@ export default function BookGrid({ books, cart }: BookGridProps) {
         </div>
 
         {/* Mobile-only "Next Page" button */}
-        <div className="mt-6 flex md:hidden justify-center">
-          {currentPage < totalPages && (
+        {totalPages > 1 && (
+          <div className="flex md:hidden items-center justify-center mt-8 space-x-2">
+            <button
+              onClick={() => handlePageChange("prev")}
+              disabled={currentPage === 1 || isAnimating}
+              className="px-4 py-2 rounded-full font-semibold border shadow-sm transition-all duration-200 bg-black text-white border-black hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed">
+              Prev
+            </button>
+            {getPaginationDots(currentPage, totalPages).map((dot, idx) =>
+              dot === "..." ? (
+                <span
+                  key={"ellipsis-mobile-" + idx}
+                  className="w-4 text-center text-gray-400">
+                  …
+                </span>
+              ) : (
+                <button
+                  key={"dot-mobile-" + idx}
+                  onClick={() => handleDotClick(dot as number)}
+                  className={`w-8 h-8 rounded-full transition-all duration-300 focus:outline-none ${
+                    currentPage === dot
+                      ? "bg-blue-600 text-white scale-110"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}>
+                  {dot}
+                </button>
+              ),
+            )}
             <button
               onClick={() => handlePageChange("next")}
-              disabled={isAnimating}
-              className="px-6 py-3 rounded-full bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700 transition-all duration-300">
-              Show Next Page
+              disabled={currentPage === totalPages || isAnimating}
+              className="px-4 py-2 rounded-full font-semibold border shadow-sm transition-all duration-200 bg-black text-white border-black hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed">
+              Next
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Pagination Indicator */}
         <div className="hidden md:flex items-center justify-center mt-8 space-x-2">

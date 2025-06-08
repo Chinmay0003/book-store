@@ -15,13 +15,21 @@ import dynamic from "next/dynamic";
 const Features = dynamic(() => import("@/components/home/Features"));
 const Footer = dynamic(() => import("@/components/layout/Footer"));
 
+function getPaginationDots(current: number, total: number) {
+  if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 3) return [1, 2, 3, "...", total];
+  if (current >= total - 2) return [1, "...", total - 2, total - 1, total];
+  return [1, "...", current, "...", total];
+}
+
 export default function Home() {
   const { books, setBooks } = useBookStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const { cart, setCart, initializeCart } = useCartStore();
   const [isLoading, setIsLoading] = useState(true);
-  const [visibleBooks, setVisibleBooks] = useState(8);
+  const [currentPage, setCurrentPage] = useState(1);
+  const booksPerPage = 8;
 
   // Handle token in URL for initial login
   useEffect(() => {
@@ -77,9 +85,18 @@ export default function Home() {
     .filter((book) => book.name.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
-  const handleLoadMore = () => {
-    setVisibleBooks((prev) => prev + 8);
+  const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
+
+  const handlePageChange = (direction: "next" | "prev") => {
+    setCurrentPage((prev) =>
+      direction === "next" ? Math.min(prev + 1, totalPages) : Math.max(prev - 1, 1),
+    );
   };
+
+  const handleDotClick = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
     <div className="w-full bg-white">
       <Hero />
@@ -88,19 +105,16 @@ export default function Home() {
         {isLoading ? (
           <LoadingSpinner />
         ) : (
-          <BookGrid books={filteredBooks.slice(0, visibleBooks)} cart={cart} />
+          <BookGrid
+            books={filteredBooks}
+            cart={cart}
+            totalPages={totalPages}
+            currentPage={currentPage}
+            handlePageChange={handlePageChange}
+            handleDotClick={handleDotClick}
+          />
         )}
       </div>
-      {visibleBooks < filteredBooks.length && (
-        <div className="flex justify-center mt-8">
-          <button
-            onClick={handleLoadMore}
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-          >
-            Load More
-          </button>
-        </div>
-      )}
       <Features />
       <Footer />
     </div>
