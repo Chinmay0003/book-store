@@ -12,6 +12,7 @@ interface BookStoreState {
 }
 
 interface CartStoreState {
+  id: number | null;
   cart: number[];
   setCart: (cart: number[]) => void;
   removingItemId: number | null;
@@ -30,6 +31,7 @@ export const useBookStore = create<BookStoreState>((set) => ({
 }));
 
 export const useCartStore = create<CartStoreState>((set, get) => ({
+  id: null,
   cart: [],
   removingItemId: null,
 
@@ -75,8 +77,9 @@ export const useCartStore = create<CartStoreState>((set, get) => ({
     if (token) {
       try {
         const cartBooks = await fetchActiveCart(token);
-        const cart = cartBooks ? cartBooks.map((b) => b.id) : [];
-        set({ cart });
+        const cart = cartBooks.books ? cartBooks.books.map((b) => b.id) : [];
+        const cartId = cartBooks.id;
+        set({ cart, id: cartId });
       } catch (error) {
         console.error("Error initializing cart:", error);
       }
@@ -111,7 +114,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       const user = await authUser(token);
       const cartBooks = await fetchActiveCart(token) ?? [];
-      const cart = cartBooks
+      const cart = cartBooks.books
         .filter((book) => book.isSold === false)
         .map((book) => book.id.toString());
 

@@ -52,7 +52,7 @@ export default function Home() {
         console.log("User data:", userData);
 
         // Always replace cart with server cart — do NOT merge to avoid duplicates
-        const cartBooks = await fetchActiveCart(token);
+        const cartBooks = (await fetchActiveCart(token)).books;
         if (cartBooks) {
           const updatedCart = cartBooks
             .filter((book) => book.isSold === false)

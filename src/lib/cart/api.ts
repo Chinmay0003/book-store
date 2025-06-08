@@ -5,13 +5,14 @@ import { ICartStatusEnum } from "@/lib/cart/enums";
 
 export const fetchActiveCart = async (token: string) => {
   try {
-    const res = await axios.get<ICartResponse[]>(`${BACKEND_API}/cart`, {
+    const res = await axios.get<ICartResponse>(`${BACKEND_API}/cart`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const carts = res.data;
-    return carts
-      .find((cart) => cart.status === ICartStatusEnum.ACTIVE)
-      ?.cartBookTopology.map((book) => book.book);
+    const cart = res.data;
+    return {
+      books: cart.cartBookTopology.map((book) => book.book),
+      id: cart.id,
+    };
   } catch (error) {
     console.error("❌ Error fetching books:");
     throw error;

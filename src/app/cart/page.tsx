@@ -4,19 +4,21 @@ import { motion } from "framer-motion";
 import { Trash2, Lock } from "lucide-react";
 import { useBookStore, useCartStore } from "@/lib/books/bookStore";
 import { updateCartWithBooks } from "@/lib/cart/api";
-import { addAddress, getAllAddress } from "@/lib/address/api";
+import { addAddress, fetchPriceDetails, getAllAddress } from "@/lib/address/api";
 import {
   IAddAddressRequest,
   IAddressData,
   IGetAllUserAddressResponse,
 } from "@/lib/address/types";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import { initiatePayment, markPaymentAsSuccessful } from "@/lib/payments/api";
 import { PaymentInitiationResponse, RazorpayOptions } from "@/lib/payments/types";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import PaymentSuccessModal from "../../components/ui/PaymentSuccessfulModal";
 import { IAddressCountryEnum } from "@/lib/cart/enums";
+import { ensureBooksLoaded } from "@/lib/books/bookLoader";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 const Index = () => {
   const [discountCode, setDiscountCode] = useState("");
   const [userAddress, setUserAddress] = useState<IGetAllUserAddressResponse | null>(
@@ -30,15 +32,17 @@ const Index = () => {
   const setRemovingItemId = useCartStore((state) => state.setRemovingItemId);
   const booksData = useBookStore();
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
-
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [isApplying, setIsApplying] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const readyToCheckout = booksData.books.filter((book) =>
     cartData.cart.includes(book.id),
   );
   const { register, handleSubmit } = useForm<IAddAddressRequest>();
-  const subtotal = readyToCheckout.reduce((sum, item) => sum + item.price, 0);
-  const shipping = subtotal > 599 ? 0 : 100;
-  const discount = 0;
-  const total = subtotal + shipping - discount;
+  const [subtotal, setSubtotal] = useState(0);
+  const [shipping, setShipping] = useState(0);
+  const [discount, setDiscount] = useState(0);
+  const [total, setTotal] = useState(0);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -67,9 +71,9 @@ const Index = () => {
     try {
       await updateCartWithBooks(updatedCart, token);
       // Always fetch the latest cart from backend after update
-      const latestCart = await import("@/lib/cart/api").then((m) =>
+      const latestCart = (await import("@/lib/cart/api").then((m) =>
         m.fetchActiveCart(token),
-      );
+      )).books;
       cartData.setCart(latestCart ? latestCart.map((e) => e.id) : []);
       toast.success("Book removed from cart");
     } catch (error) {
@@ -79,6 +83,16 @@ const Index = () => {
       setRemovingItemId(null);
     }
   };
+  // Load books on initial mount
+  useEffect(() => {
+    async function loadBooks() {
+      setIsLoading(true);
+      await ensureBooksLoaded();
+      setIsLoading(false);
+    }
+    loadBooks();
+  }, [booksData.setBooks]);
+
   useEffect(() => {
     const fetchUserAddress = async () => {
       try {
@@ -95,6 +109,32 @@ const Index = () => {
     };
     fetchUserAddress();
   }, []);
+
+  useEffect(() => {
+    const fetchCartPriceDetails = async () => {
+      try {
+        const token = localStorage.getItem("token") ?? "";
+        console.log(`Fetching price details for cart ID: ${cartData.id}`);
+        const priceDetails = (await fetchPriceDetails(token, {
+          cartId: cartData.id!,
+        })) ?? {
+          cartPrice: 0,
+          discountAmount: 0,
+          deliveryCharge: 0,
+          finalPrice: 0,
+        };
+        setSubtotal(priceDetails.cartPrice);
+        setShipping(priceDetails.deliveryCharge);
+        setDiscount(priceDetails.discountAmount);
+        setTotal(priceDetails.finalPrice);
+      } catch (error) {
+        console.error("Error fetching user address:", error);
+      }
+    }
+    if (cartData.id) {
+      fetchCartPriceDetails();
+    }  
+  }, [cartData.id]);
 
   const handleSubmitAddress = async (data: IAddAddressRequest) => {
     const token = localStorage.getItem("token") || "";
@@ -114,7 +154,10 @@ const Index = () => {
     try {
       if (isProcessingPayment) return;
       setIsProcessingPayment(true);
-      const data = await initiatePayment(bookIds, selectedAddressId!);
+      if (cartData.id === null) {
+        return;
+      }
+      const data = await initiatePayment(cartData.id, selectedAddressId!, appliedCoupon ?? undefined);
       if (!data.id) throw new Error("Order not created");
 
       if (!window.Razorpay) {
@@ -135,6 +178,65 @@ const Index = () => {
       setIsProcessingPayment(false);
     }
   };
+
+  const handleApplyCoupon = async () => {
+    if (!discountCode) return;
+    setIsApplying(true);
+  
+    try {
+      const token = localStorage.getItem("token") ?? "";
+      const priceDetails = (await fetchPriceDetails(token, {
+        cartId: cartData.id!,
+        coupon: discountCode,
+      })) ?? {
+        cartPrice: 0,
+        discountAmount: 0,
+        deliveryCharge: 0,
+        finalPrice: 0,
+      };
+
+      setAppliedCoupon(discountCode);
+      setDiscountCode("");
+      setSubtotal(priceDetails.cartPrice);
+      setShipping(priceDetails.deliveryCharge);
+      setDiscount(priceDetails.discountAmount);
+      setTotal(priceDetails.finalPrice);
+  
+    } catch (error) {
+      console.error("Error applying coupon:", error);
+    } finally {
+      setIsApplying(false);
+    }
+  };
+  
+  const handleRemoveCoupon = async () => {
+    setAppliedCoupon(null);
+    setIsApplying(true);
+    try {
+      const token = localStorage.getItem("token") ?? "";
+      const priceDetails = (await fetchPriceDetails(token, {
+        cartId: cartData.id!,
+      })) ?? {
+        cartPrice: 0,
+        discountAmount: 0,
+        deliveryCharge: 0,
+        finalPrice: 0,
+      };
+
+      setAppliedCoupon(null);
+      setDiscountCode("");
+      setSubtotal(priceDetails.cartPrice);
+      setShipping(priceDetails.deliveryCharge);
+      setDiscount(priceDetails.discountAmount);
+      setTotal(priceDetails.finalPrice);
+  
+    } catch (error) {
+      console.error("Error applying coupon:", error);
+    } finally {
+      setIsApplying(false);
+    }
+  };
+  
 
   const openRazorpay = (data: PaymentInitiationResponse) => {
     const options: RazorpayOptions = {
@@ -184,7 +286,15 @@ const Index = () => {
     handleBuyNow(readyToCheckout.map((book) => book.id));
   };
   const countries = Object.values(IAddressCountryEnum);
-  return (
+  return isLoading ? (
+    <div className="absolute top-0 left-0 w-full h-full pointer-events-none w-full bg-white">
+      <div className="floating-shape absolute w-48 h-48 bg-pink-100 rounded-full opacity-60 mix-blend-multiply top-20 left-20 animate-float" />
+      <div className="floating-shape absolute w-48 h-48 bg-pink-100 rounded-full opacity-60 mix-blend-multiply bottom-20 left-50 animate-float" />
+      <div className="floating-shape absolute w-64 h-64 bg-purple-100 rounded-full opacity-40 mix-blend-multiply top-40 right-32 animate-float delay-500" />
+      <div className="floating-shape absolute w-32 h-32 bg-blue-100 rounded-full opacity-60 mix-blend-multiply bottom-20 left-1/3 animate-float delay-1000" />
+      <LoadingSpinner />
+    </div>
+  ) : (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden text-sm text-[#22223b]">
       {/* Animated background elements */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
@@ -427,18 +537,78 @@ const Index = () => {
                   <label className="block text-sm font-medium text-slate-600 mb-2">
                     Discount Code
                   </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={discountCode}
-                      onChange={(e) => setDiscountCode(e.target.value)}
-                      placeholder="Enter code"
-                      className="flex-1 p-3 rounded-lg border w-full border-slate-200 transition-all"
-                    />
-                    <button className="px-6  bg-[#22223b] hover:bg-[#22223b] text-white rounded-lg transition-colors">
-                      Apply
-                    </button>
-                  </div>
+
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">Coupon Applied:</span>
+                        <span className="bg-green-800 text-white px-2 py-0.5 rounded text-sm">
+                          {appliedCoupon}
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleRemoveCoupon}
+                        className="text-sm text-red-500 hover:underline ml-4"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={discountCode}
+                        onChange={(e) => setDiscountCode(e.target.value)}
+                        placeholder="Enter code"
+                        disabled={!!appliedCoupon}
+                        className="flex-1 p-3 rounded-lg border w-full border-slate-200 transition-all disabled:bg-slate-100"
+                      />
+                      <button
+                        onClick={handleApplyCoupon}
+                        disabled={isApplying || !discountCode}
+                        className="px-6 bg-[#22223b] hover:bg-[#22223b] text-white rounded-lg transition-colors flex items-center justify-center disabled:opacity-50"
+                      >
+                        {isApplying ? (
+                          <svg
+                            className="animate-spin h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                            />
+                          </svg>
+                        ) : (
+                          "Apply"
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Success or error messages */}
+                  {/* {couponSuccess && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-green-600 text-sm mt-2"
+                    >
+                      🎉 Coupon applied successfully!
+                    </motion.p>
+                  )}
+                  {couponError && (
+                    <p className="text-red-500 text-sm mt-2">{couponError}</p>
+                  )} */}
                 </motion.div>
 
                 {/* Order Summary */}
