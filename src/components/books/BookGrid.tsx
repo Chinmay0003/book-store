@@ -2,7 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import BookCard from "@/components/ui/BookCard";
 import { IGetAllBooksResponse } from "@/lib/books/types";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  FunnelIcon,
+  StarIcon,
+} from "@heroicons/react/24/outline";
 import BookCategory from "../ui/BookCategory";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "../ui/LoadingSpinner";
@@ -227,8 +232,9 @@ export default function BookGrid({ books, cart }: BookGridProps) {
       </div>
       <div className="w-full flex-col justify-start py-10 px-4 md:px-10">
         <div className="w-full flex flex-col items-center gap-2 max-w-10xl">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex justify-start mb-5 mt-5">
-            Fiter age by group
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex items-center justify-start mb-5 mt-5 gap-2">
+            <FunnelIcon className="w-6 h-6 text-blue-600" />
+            Filter age by group
           </h2>
           <div className="w-full overflow-x-auto custom-scrollbar sm:flex sm:justify-center sm:overflow-visible scroll-snap-x mandatory scroll-pl-4">
             {/* Grid Container */}
@@ -262,7 +268,8 @@ export default function BookGrid({ books, cart }: BookGridProps) {
       </div>
       <div className="w-full flex-col justify-start px-2 sm:px-4 md:px-10">
         <div className="relative w-full flex flex-col items-center gap-2">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex items-center justify-center max-w-10xl mb-5 mt-5">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex items-center justify-center max-w-10xl mb-5 mt-5 gap-2">
+            <StarIcon className="w-6 h-6 text-yellow-500" />
             Top Picks of the Day
           </h2>
           <div className="flex w-full items-center justify-center max-w-12xl">
