@@ -7,9 +7,9 @@ interface BookCategoryProps {
 const BookCategory = ({ category, img }: BookCategoryProps) => {
   return (
     <>
-      <div className="bg-white border border-blue-100 rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 flex flex-col items-center p-0 mx-auto min-h-[340px] md:min-h-[370px] max-w-[280px] md:max-w-xs hover:scale-105 overflow-hidden">
+      <div className="bg-white border border-blue-100 rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 flex flex-col items-center p-0 mx-auto min-h-[280px] md:min-h-[370px] max-w-[280px] md:max-w-xs hover:scale-105 overflow-hidden">
         {/* Clickable Preview */}
-        <div className="relative w-full h-72 md:h-80 group cursor-pointer">
+        <div className="relative w-full h-60 md:h-80 group cursor-pointer">
           <Image
             src={img}
             alt={category}
