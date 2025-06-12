@@ -12,6 +12,8 @@ export default function Navbar() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const user = useAuthStore((s) => s.user);
   const cart = useCartStore((s) => s.cart);
+  const unpaidBlockedCart = useCartStore((s) => s.unpaidBlockedCart);
+  const paidBlockedCart = useCartStore((s) => s.paidBlockedCart);
   const handleSignIn = useAuthStore((s) => s.handleSignIn);
   const handleSignOut = useAuthStore((s) => s.handleSignOut);
 
@@ -55,9 +57,9 @@ export default function Navbar() {
                 className="relative p-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
                 onClick={() => router.push("/cart")}>
                 <ShoppingCart className="h-6 w-6 text-[#22223b]" />
-                {cart.length > 0 && (
+                {cart.length + unpaidBlockedCart.length + paidBlockedCart.length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {cart.length}
+                    {cart.length + unpaidBlockedCart.length + paidBlockedCart.length}
                   </span>
                 )}
               </button>

@@ -11,17 +11,6 @@ interface BookStoreState {
   setBooks: (books: IBookData[]) => void;
 }
 
-interface CartStoreState {
-  id: number | null;
-  cart: number[];
-  setCart: (cart: number[]) => void;
-  removingItemId: number | null;
-  setRemovingItemId: (id: number | null) => void;
-  addToCart: (bookId: number) => void;
-  removeFromCart: (bookId: number) => void;
-  initializeCart: () => Promise<void>;
-}
-
 export const useBookStore = create<BookStoreState>((set) => ({
   selectedBook: null,
   setSelectedBook: (book) => set({ selectedBook: book }),
@@ -30,20 +19,94 @@ export const useBookStore = create<BookStoreState>((set) => ({
   setBooks: (books) => set({ books }),
 }));
 
+interface CartStoreState {
+  id: number | null;
+  cart: number[];
+  allBooksData: IBookData[];
+  unpaidBlockedCartId: number | null,
+  unpaidBlockedCart: number[],
+  paidBlockedCartId: number | null,
+  paidBlockedCart: number[],
+  setCart: (cart: number[]) => void;
+  setAllBooksData: (books: IBookData[]) => void;
+  setUnpaidBlockedCart: (cart: number[]) => void;
+  removingItemId: number | null;
+  setRemovingItemId: (id: number | null) => void;
+  addToCart: (bookId: number, isBlock?: boolean) => void;
+  removeFromCart: (bookId: number, isBlock?: boolean) => void;
+  initializeCart: () => Promise<void>;
+}
+
 export const useCartStore = create<CartStoreState>((set, get) => ({
   id: null,
   cart: [],
+  allBooksData: [],
+  unpaidBlockedCartId: null,
+  unpaidBlockedCart: [],
+  paidBlockedCartId: null,
+  paidBlockedCart: [],
   removingItemId: null,
 
   setCart: (cart) => set({ cart }),
+  setAllBooksData: (books) => set({allBooksData: books}),
+  setUnpaidBlockedCart: (unpaidBlockedCart) => set({ unpaidBlockedCart }),
   setRemovingItemId: (id) => set({ removingItemId: id }),
 
-  addToCart: async (bookId) => {
-    const currentCart = get().cart;
-    if (!currentCart.includes(bookId)) {
-      const updatedCart = [...currentCart, bookId];
-      set({ cart: updatedCart });
+  addToCart: async (bookId, isBlock = false) => {
+    if (isBlock) {
+      const currentBlockedCart = get().unpaidBlockedCart;
+      if (!currentBlockedCart.includes(bookId)) {
+        const updatedCart = [...currentBlockedCart, bookId];
+        set({unpaidBlockedCart: updatedCart});
 
+        const token = localStorage.getItem("token");
+        if (token) {
+          try {
+            await updateCartWithBooks(updatedCart, token, true);
+          } catch (error) {
+            console.error("Error syncing cart:", error);
+          }
+        }
+      }
+    } else {
+      const currentCart = get().cart;
+      if (!currentCart.includes(bookId)) {
+        const updatedCart = [...currentCart, bookId];
+        set({ cart: updatedCart });
+        
+        // Sync with server
+        const token = localStorage.getItem("token");
+        if (token) {
+          try {
+            await updateCartWithBooks(updatedCart, token);
+          } catch (error) {
+            console.error("Error syncing cart:", error);
+          }
+        }
+      }
+    }
+  },
+
+  removeFromCart: async (bookId, isBlock = false) => {
+    if (isBlock) {
+      const currentCart = get().unpaidBlockedCart;
+      const updatedCart = currentCart.filter((id) => id !== bookId);
+      set({ cart: updatedCart });
+      
+      // Sync with server
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          await updateCartWithBooks(updatedCart, token, true);
+        } catch (error) {
+          console.error("Error syncing cart:", error);
+        }
+      }
+    } else {
+      const currentCart = get().cart;
+      const updatedCart = currentCart.filter((id) => id !== bookId);
+      set({ cart: updatedCart });
+      
       // Sync with server
       const token = localStorage.getItem("token");
       if (token) {
@@ -56,22 +119,6 @@ export const useCartStore = create<CartStoreState>((set, get) => ({
     }
   },
 
-  removeFromCart: async (bookId) => {
-    const currentCart = get().cart;
-    const updatedCart = currentCart.filter((id) => id !== bookId);
-    set({ cart: updatedCart });
-
-    // Sync with server
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        await updateCartWithBooks(updatedCart, token);
-      } catch (error) {
-        console.error("Error syncing cart:", error);
-      }
-    }
-  },
-
   initializeCart: async () => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -79,7 +126,11 @@ export const useCartStore = create<CartStoreState>((set, get) => ({
         const cartBooks = await fetchActiveCart(token);
         const cart = cartBooks.books ? cartBooks.books.map((b) => b.id) : [];
         const cartId = cartBooks.id;
-        set({ cart, id: cartId });
+        const unpaidBlockedCartId = cartBooks.unpaidBlockedCartId?.id ?? null;
+        const unpaidBlockedCart = cartBooks.unpaidBlockedCart?.map(e=>e.id) ?? [];
+        const paidBlockedCartId = cartBooks.paidBlockedCartId?.id ?? null;
+        const paidBlockedCart = cartBooks.paidBlockedCart?.map(e=>e.id) ?? [];
+        set({ cart, id: cartId, unpaidBlockedCartId, unpaidBlockedCart, paidBlockedCartId, paidBlockedCart });
       } catch (error) {
         console.error("Error initializing cart:", error);
       }
