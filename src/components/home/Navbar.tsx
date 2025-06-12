@@ -1,7 +1,7 @@
 import Image from "next/image";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, X, Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import userIcon from "@/assets/userIcon.jpg";
 import { useAuthStore, useCartStore } from "@/lib/books/bookStore";
 import Link from "next/link";
@@ -14,62 +14,164 @@ export default function Navbar() {
   const handleSignIn = useAuthStore((s) => s.handleSignIn);
   const handleSignOut = useAuthStore((s) => s.handleSignOut);
 
-  return (
+  // Close mobile nav on route change or resize to desktop
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setMobileNavOpen(false);
+    };
+
+    // Assuming you have access to router events, otherwise you might need to handle this differently
+    // For Next.js 13+ with App Router, you might need a different approach or use useEffect on a layout file
+    // For this component, we'll just close it on any interaction that causes a re-render of the router.
+    handleRouteChange();
+
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setMobileNavOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [router]);
+
+  const mobileMenuContent = (
     <>
-      {/* Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-1200 bg-white shadow-md max-w-8xl mx-auto flex items-center justify-between py-4 px-4 md:px-6 text-black backdrop-blur-md transition-all duration-300">
-        {/* Logo */}
-        <Link href={"/"}>
-          <div className="flex items-center gap-3">
-            <Image src="/favicon.ico" alt="Mybestkid Logo" width={40} height={40} />
-            <span className="text-2xl md:text-3xl font-bold text-[#23395d]">
-              Mybestkid
+      {user ? (
+        <>
+          <div className="flex items-center gap-3 p-4 border-b border-gray-200">
+            <Image
+              src={userIcon}
+              alt="User Icon"
+              width={40}
+              height={40}
+              className="rounded-full border border-gray-300"
+            />
+            <span className="font-medium text-lg text-[#23395d]">
+              Hello, {user.name || "User"}
             </span>
           </div>
-        </Link>
+          <div className="flex flex-col p-4 space-y-2">
+            <Link
+              href="/contact"
+              onClick={() => setMobileNavOpen(false)}
+              className="block px-4 py-3 text-lg text-gray-700 hover:bg-gray-100 rounded-lg transition">
+              Contact Us
+            </Link>
+            <button
+              onClick={() => {
+                handleSignOut();
+                setMobileNavOpen(false);
+              }}
+              className="text-left block w-full px-4 py-3 text-lg text-gray-700 hover:bg-gray-100 rounded-lg transition">
+              Sign out
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-col p-4 space-y-2">
+          <Link
+            href="/"
+            onClick={() => setMobileNavOpen(false)}
+            className="block px-4 py-3 text-lg text-gray-700 hover:bg-gray-100 rounded-lg transition">
+            HOME
+          </Link>
+          <Link
+            href="/contact"
+            onClick={() => setMobileNavOpen(false)}
+            className="block px-4 py-3 text-lg text-gray-700 hover:bg-gray-100 rounded-lg transition">
+            Contact Us
+          </Link>
+          <button
+            onClick={() => {
+              handleSignIn();
+              setMobileNavOpen(false);
+            }}
+            className="text-left block w-full px-4 py-3 text-lg text-gray-700 hover:bg-gray-100 rounded-lg transition">
+            Sign in
+          </button>
+        </div>
+      )}
+    </>
+  );
 
-        {/* Hamburger Icon for Mobile */}
-        <button
-          className="md:hidden p-2 rounded focus:outline-none text-black"
-          aria-label="Open menu"
-          onClick={() => setMobileNavOpen((v) => !v)}>
-          {mobileNavOpen ? (
-            <svg
-              width="28"
-              height="28"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          ) : (
-            <svg
-              width="28"
-              height="28"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          )}
-        </button>
+  return (
+    <>
+      <header className="fixed top-0 left-0 right-0 z-[1200] bg-white/80 shadow-md backdrop-blur-md">
+        <nav className="max-w-8xl mx-auto flex items-center justify-between py-3 px-4 md:px-6 text-black transition-all duration-300">
+          {/* Left side: Hamburger Menu (Mobile) & Logo */}
+          <div className="flex items-center gap-2">
+            <button
+              className="md:hidden p-2 rounded-full focus:outline-none text-black hover:bg-gray-200"
+              aria-label="Open menu"
+              onClick={() => setMobileNavOpen(true)}>
+              <Menu size={28} />
+            </button>
+            <Link href={"/"} className="flex items-center gap-3">
+              <Image src="/favicon.ico" alt="Mybestkid Logo" width={40} height={40} />
+              <span className="text-2xl md:text-3xl font-bold text-[#23395d]">
+                Mybestkid
+              </span>
+            </Link>
+          </div>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex text-black">
-          {user ? (
-            <div className="flex gap-6 text-[#23395d] font-medium text-lg">
+          {/* Center: Desktop Nav */}
+          <div className="hidden md:flex text-black">
+            {user ? (
+              <div className="flex gap-6 text-[#23395d] font-medium text-lg items-center">
+                <Link
+                  href="/contact"
+                  className="px-4 py-2 hover:text-blue-600 transition-colors">
+                  Contact Us
+                </Link>
+              </div>
+            ) : (
+              <div className="flex gap-6 text-[#23395d] font-medium text-lg">
+                <Link
+                  href="/"
+                  className="px-4 py-2 hover:text-blue-600 transition-colors">
+                  HOME
+                </Link>
+                <Link
+                  href="/contact"
+                  className="px-4 py-2 hover:text-blue-600 transition-colors">
+                  Contact Us
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Right side: Actions */}
+          <div className="flex items-center gap-2 md:gap-4">
+            {user ? (
+              <div className="hidden md:flex items-center gap-4 text-[#23395d] font-medium text-lg">
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-100 transition">
+                  Sign out
+                </button>
+                <Image
+                  src={userIcon}
+                  alt="User Icon"
+                  width={40}
+                  height={40}
+                  className="rounded-full border-2 border-gray-300"
+                />
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center gap-4">
+                <button
+                  onClick={handleSignIn}
+                  className="cursor-pointer flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-100 transition">
+                  Sign in
+                </button>
+              </div>
+            )}
+            {user && (
               <button
-                className="relative p-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                className="relative p-2 rounded-full hover:bg-gray-200"
                 onClick={() => router.push("/cart")}>
                 <ShoppingCart className="h-6 w-6 text-[#22223b]" />
                 {cart.length > 0 && (
@@ -78,99 +180,37 @@ export default function Navbar() {
                   </span>
                 )}
               </button>
-              <a
-                href="/contact"
-                className="border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
-                Contact Us
-              </a>
-              <button
-                onClick={handleSignOut}
-                className="flex items-center gap-2 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
-                Sign out
-              </button>
-              {/* Add User Icon */}
-              <Image
-                src={userIcon}
-                alt="User Icon"
-                width={60}
-                height={40}
-                className="rounded-full border border-gray-300"
-              />
-            </div>
-          ) : (
-            <div className="flex gap-6 text-[#23395d] font-medium text-lg">
-              <a
-                href="/"
-                className="border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
-                HOME
-              </a>
-              <a
-                href="/contact"
-                className="border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
-                Contact Us
-              </a>
-              <a
-                onClick={handleSignIn}
-                className="flex items-center gap-2 border border-black rounded-lg px-4 py-2 hover:bg-gray-100 transition">
-                Sign in
-              </a>
-            </div>
-          )}
-        </div>
-
-        {/* Mobile Nav Dropdown */}
-        {mobileNavOpen && (
-          <div className="absolute top-full left-0 right-0 w-full bg-white border-t border-gray-200 shadow-lg z-50 flex flex-col p-4 md:hidden text-black text-center">
-            {user ? (
-              <>
-                <button
-                  onClick={() => setMobileNavOpen(false)}
-                  className="mb-4 border border-black rounded-lg px-4 py-3 text-lg hover:bg-gray-100 transition">
-                  Cart ({cart.length || 0})
-                </button>
-                <a
-                  href="/contact"
-                  className="mb-4 border border-black rounded-lg px-4 py-3 text-lg hover:bg-gray-100 transition">
-                  Contact Us
-                </a>
-                <button
-                  onClick={() => setMobileNavOpen(false)}
-                  className="flex items-center justify-center gap-2 mb-4 border border-black rounded-lg px-4 py-3 text-lg hover:bg-gray-100 transition">
-                  Sign out
-                </button>
-                {/* Add User Icon */}
-                <Image
-                  src={userIcon}
-                  alt="User Icon"
-                  width={40}
-                  height={40}
-                  className="rounded-full border border-gray-300 mx-auto"
-                />
-              </>
-            ) : (
-              <>
-                <a
-                  href="/"
-                  className="mb-4 border border-black rounded-lg px-4 py-3 text-lg hover:bg-gray-100 transition"
-                  onClick={() => setMobileNavOpen(false)}>
-                  HOME
-                </a>
-                <a
-                  href="/contact"
-                  className="mb-4 border border-black rounded-lg px-4 py-3 text-lg hover:bg-gray-100 transition">
-                  Contact Us
-                </a>
-                <a
-                  onClick={() => setMobileNavOpen(false)}
-                  className="flex items-center justify-center gap-2 border border-black rounded-lg px-4 py-3 text-lg hover:bg-gray-100 transition">
-                  Sign in
-                </a>
-              </>
             )}
           </div>
-        )}
-      </nav>
-      <div className="pt-30"></div>
+        </nav>
+      </header>
+
+      {/* Mobile Navigation Panel */}
+      <div
+        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-xl z-[1300] transform transition-transform duration-300 ease-in-out md:hidden ${
+          mobileNavOpen ? "translate-x-0" : "-translate-x-full"
+        }`}>
+        <div className="flex justify-between items-center p-4 border-b border-gray-200">
+          <span className="text-2xl font-bold text-[#23395d]">Menu</span>
+          <button
+            onClick={() => setMobileNavOpen(false)}
+            className="p-2 rounded-full hover:bg-gray-200"
+            aria-label="Close menu">
+            <X size={24} />
+          </button>
+        </div>
+        {mobileMenuContent}
+      </div>
+
+      {/* Overlay for Mobile Nav */}
+      {mobileNavOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-40 z-[1250] md:hidden"
+          onClick={() => setMobileNavOpen(false)}></div>
+      )}
+
+      {/* Spacer to prevent content from being hidden behind the fixed navbar */}
+      <div className="pt-20"></div>
     </>
   );
 }

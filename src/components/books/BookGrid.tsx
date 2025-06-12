@@ -43,6 +43,7 @@ export default function BookGrid({
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const booksPerPage = 8; // Changed to 8 books per page (2 rows of 4)
   const carouselRef = useRef<HTMLDivElement>(null);
   const filteredBooks = books.filter((book) =>
@@ -138,26 +139,104 @@ export default function BookGrid({
       <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-10 text-gray-800 tracking-tight drop-shadow-sm">
         Our Premium Book Collection
       </h2>
-      {/* Search Bar */}
-      <div className="relative w-full max-w-md md:max-w-xl mb-8">
-        {/* Search Icon */}
-        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-            stroke="currentColor"
-            className="w-5 h-5">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
+
+      {/* --- MOBILE SEARCH & FILTER --- */}
+      <div className="md:hidden w-full px-4 mb-6">
+        <div className="flex items-center gap-2">
+          {/* Search Input */}
+          <div className="relative flex-grow">
+            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Search or type a book name..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowDropdown(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  router.push(`/search/${encodeURIComponent(searchQuery)}`);
+                }
+              }}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+              className="w-full pl-10 pr-10 py-2 rounded-full shadow-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-base"
             />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+            {/* Dropdown for mobile */}
+            {showDropdown && searchQuery.trim() !== "" && (
+              <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-md max-h-64 overflow-y-auto">
+                {isSearching ? (
+                  <div className="flex justify-center items-center py-4">
+                    <LoadingSpinner size="h-8 w-8" />
+                  </div>
+                ) : filteredBooks.length > 0 ? (
+                  filteredBooks.map((book, index) => (
+                    <div key={book.id}>
+                      <div
+                        className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150"
+                        onClick={() => handleBookSelect(book.id)}
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleBookSelect(book.id);
+                          }
+                        }}>
+                        {loadingBookId === book.id && (
+                          <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
+                            <LoadingSpinner size="h-8 w-8" />
+                          </div>
+                        )}
+                        <div className={`flex items-center gap-4 ${loadingBookId === book.id ? "opacity-50" : ""}`}>
+                          {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
+                            <img
+                              src={book.bookMedia.filter((e) => e.type === "image")[0].metadata.s3_url}
+                              className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-md bg-gray-100 border border-gray-200"></div>
+                          )}
+                          <span>{book.name}</span>
+                        </div>
+                      </div>
+                      {index < filteredBooks.length - 1 && (
+                        <hr className="mx-4 border-t border-gray-200" />
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-4 py-3 text-gray-500">No matching books found</div>
+                )}
+              </div>
+            )}
+          </div>
+          {/* Filter Toggle Button */}
+          <button
+            onClick={() => setShowFilters((prev) => !prev)}
+            className="p-3 rounded-full shadow-md border border-gray-200 bg-white"
+          >
+            <FunnelIcon className="w-5 h-5 text-blue-600" />
+          </button>
+        </div>
+      </div>
+
+      {/* --- DESKTOP SEARCH --- */}
+      <div className="hidden md:block relative w-full max-w-md md:max-w-xl mb-8">
+        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
           </svg>
         </div>
-
-        {/* Search Input */}
         <input
           type="text"
           placeholder="Search or type a book name..."
@@ -174,30 +253,14 @@ export default function BookGrid({
           onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
           className="w-full pl-10 pr-10 py-2 md:pl-12 md:pr-12 md:py-3 rounded-full shadow-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-base md:text-lg"
         />
-
-        {/* Clear Button */}
         {searchQuery && (
-          <button
-            onClick={() => setSearchQuery("")}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-all duration-200 group">
+          <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-all duration-200 group">
             <div className="absolute -inset-1 rounded-full bg-gray-100 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-              className="w-5 h-5 relative z-10">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5 relative z-10">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         )}
-
-        {/* Dropdown */}
         {showDropdown && searchQuery.trim() !== "" && (
           <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-md max-h-64 overflow-y-auto">
             {isSearching ? (
@@ -221,17 +284,10 @@ export default function BookGrid({
                         <LoadingSpinner size="h-8 w-8" />
                       </div>
                     )}
-                    <div
-                      className={`flex items-center gap-4 ${
-                        loadingBookId === book.id ? "opacity-50" : ""
-                      }`}>
+                    <div className={`flex items-center gap-4 ${loadingBookId === book.id ? "opacity-50" : ""}`}>
                       {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
                         <img
-                          src={
-                            book.bookMedia.filter((e) => e.type === "image")[0].metadata
-                              .s3_url
-                          }
-                          // alt={book.name}
+                          src={book.bookMedia.filter((e) => e.type === "image")[0].metadata.s3_url}
                           className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
                         />
                       ) : (
@@ -251,14 +307,41 @@ export default function BookGrid({
           </div>
         )}
       </div>
-      <div className="w-full flex-col justify-start py-10 px-4 md:px-10">
+
+      {/* --- MOBILE FILTERS (conditionally rendered) --- */}
+      {showFilters && (
+        <div className="md:hidden w-full mb-8">
+          <div className="w-full overflow-x-auto custom-scrollbar">
+            <div className="inline-flex flex-nowrap gap-4 px-4 py-2">
+              {Object.keys(bookCategories).map((category) => (
+                <div
+                  key={category}
+                  className="transform transition-all duration-300 hover:scale-105 relative min-w-[220px] max-w-[240px] scroll-snap-align-start"
+                  onClick={() => handleCategoryClick(category)}
+                >
+                  {loadingCategory === category && (
+                    <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
+                      <LoadingSpinner size="h-12 w-12" />
+                    </div>
+                  )}
+                  <div className={`bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)] ${loadingCategory === category ? "opacity-50" : ""}`}>
+                    <BookCategory category={category} img={bookCategories[category].img} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- DESKTOP FILTERS --- */}
+      <div className="hidden md:flex w-full flex-col justify-start py-10 px-4 md:px-10">
         <div className="w-full flex flex-col items-center gap-2 max-w-10xl">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex items-center justify-start mb-5 mt-5 gap-2">
             <FunnelIcon className="w-6 h-6 text-blue-600" />
             Filter by Age group
           </h2>
           <div className="w-full overflow-x-auto custom-scrollbar sm:flex sm:justify-center sm:overflow-visible scroll-snap-x mandatory scroll-pl-4">
-            {/* Grid Container */}
             <div
               className="inline-flex flex-nowrap gap-8 px-4 py-2 sm:grid sm:w-auto sm:grid-cols-2 sm:gap-16 sm:px-0 md:grid-cols-3 lg:grid-cols-3"
               style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
