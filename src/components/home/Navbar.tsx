@@ -78,7 +78,7 @@ export default function Navbar() {
             href="/"
             onClick={() => setMobileNavOpen(false)}
             className="block px-4 py-3 text-lg text-gray-700 hover:bg-gray-100 rounded-lg transition">
-            HOME
+            Home
           </Link>
           <Link
             href="/contact"
@@ -142,7 +142,7 @@ export default function Navbar() {
                 <Link
                   href="/"
                   className="cursor-pointer flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-100 transition">
-                  HOME
+                  Home
                 </Link>
                 <Link
                   href="/contact"
