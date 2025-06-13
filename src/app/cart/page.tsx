@@ -4,19 +4,21 @@ import { motion } from "framer-motion";
 import { Trash2, Lock } from "lucide-react";
 import { useBookStore, useCartStore } from "@/lib/books/bookStore";
 import { updateCartWithBooks } from "@/lib/cart/api";
-import { addAddress, getAllAddress } from "@/lib/address/api";
+import { addAddress, fetchPriceDetails, getAllAddress } from "@/lib/address/api";
 import {
   IAddAddressRequest,
   IAddressData,
   IGetAllUserAddressResponse,
 } from "@/lib/address/types";
-import { useForm } from "react-hook-form";
-import { initiatePayment, markPaymentAsSuccessful } from "@/lib/payments/api";
+import { set, useForm } from "react-hook-form";
+import { initiatePayment, markBlockingCompletePaymentAsSuccessful, markBlockingPaymentAsSuccessful, markPaymentAsSuccessful } from "@/lib/payments/api";
 import { PaymentInitiationResponse, RazorpayOptions } from "@/lib/payments/types";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import PaymentSuccessModal from "../../components/ui/PaymentSuccessfulModal";
 import { IAddressCountryEnum } from "@/lib/cart/enums";
+import { ensureBooksLoaded } from "@/lib/books/bookLoader";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 const Index = () => {
   const [discountCode, setDiscountCode] = useState("");
   const [userAddress, setUserAddress] = useState<IGetAllUserAddressResponse | null>(
@@ -24,21 +26,29 @@ const Index = () => {
   ); // Adjusted type to array or null
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(0);
   const cartData = useCartStore();
   const removingItemId = useCartStore((state) => state.removingItemId);
   const setRemovingItemId = useCartStore((state) => state.setRemovingItemId);
   const booksData = useBookStore();
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
-
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [isApplying, setIsApplying] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const readyToCheckout = booksData.books.filter((book) =>
     cartData.cart.includes(book.id),
   );
+  const unpaidBlockedBooks = cartData.allBooksData.filter(book => 
+    cartData.unpaidBlockedCart.includes(book.id)
+  );
+  const paidBlockedBooks = cartData.allBooksData.filter(book => 
+    cartData.paidBlockedCart.includes(book.id)
+  );
   const { register, handleSubmit } = useForm<IAddAddressRequest>();
-  const subtotal = readyToCheckout.reduce((sum, item) => sum + item.price, 0);
-  const shipping = subtotal > 599 ? 0 : 100;
-  const discount = 0;
-  const total = subtotal + shipping - discount;
+  const [subtotal, setSubtotal] = useState(0);
+  const [shipping, setShipping] = useState(0);
+  const [discount, setDiscount] = useState(0);
+  const [total, setTotal] = useState(0);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -67,9 +77,9 @@ const Index = () => {
     try {
       await updateCartWithBooks(updatedCart, token);
       // Always fetch the latest cart from backend after update
-      const latestCart = await import("@/lib/cart/api").then((m) =>
+      const latestCart = (await import("@/lib/cart/api").then((m) =>
         m.fetchActiveCart(token),
-      );
+      )).books;
       cartData.setCart(latestCart ? latestCart.map((e) => e.id) : []);
       toast.success("Book removed from cart");
     } catch (error) {
@@ -79,6 +89,41 @@ const Index = () => {
       setRemovingItemId(null);
     }
   };
+
+  const handleRemoveBlockedBookFromCart = async (bookId: number) => {
+    setRemovingItemId(bookId);
+    const updatedCart = cartData.unpaidBlockedCart.filter((id: number) => id !== bookId);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("User not authenticated");
+      setRemovingItemId(null);
+      return;
+    }
+    try {
+      await updateCartWithBooks(updatedCart, token, true);
+      // Always fetch the latest cart from backend after update
+      const latestCart = (await import("@/lib/cart/api").then((m) =>
+        m.fetchActiveCart(token),
+      )).unpaidBlockedCart ?? [];
+      cartData.setUnpaidBlockedCart(latestCart.map(e=>e.id));
+      toast.success("Book removed from cart");
+    } catch (error) {
+      toast.error("Error removing book from cart");
+      console.error("Error removing book from cart:", error);
+    } finally {
+      setRemovingItemId(null);
+    }
+  };
+  // Load books on initial mount
+  useEffect(() => {
+    async function loadBooks() {
+      setIsLoading(true);
+      await ensureBooksLoaded();
+      setIsLoading(false);
+    }
+    loadBooks();
+  }, [booksData.setBooks]);
+
   useEffect(() => {
     const fetchUserAddress = async () => {
       try {
@@ -96,6 +141,32 @@ const Index = () => {
     fetchUserAddress();
   }, []);
 
+  useEffect(() => {
+    const fetchCartPriceDetails = async () => {
+      try {
+        const token = localStorage.getItem("token") ?? "";
+        console.log(`Fetching price details for cart ID: ${cartData.id}`);
+        const priceDetails = (await fetchPriceDetails(token, {
+          cartId: cartData.id!,
+        })) ?? {
+          cartPrice: 0,
+          discountAmount: 0,
+          deliveryCharge: 0,
+          finalPrice: 0,
+        };
+        setSubtotal(priceDetails.cartPrice);
+        setShipping(priceDetails.deliveryCharge);
+        setDiscount(priceDetails.discountAmount);
+        setTotal(priceDetails.finalPrice);
+      } catch (error) {
+        console.error("Error fetching user address:", error);
+      }
+    }
+    if (cartData.id) {
+      fetchCartPriceDetails();
+    }  
+  }, [cartData.id]);
+
   const handleSubmitAddress = async (data: IAddAddressRequest) => {
     const token = localStorage.getItem("token") || "";
     console.log("Submitting address:", data);
@@ -110,33 +181,119 @@ const Index = () => {
     setUserAddress(userAddress);
   };
 
-  const handleBuyNow = async (bookIds: number[]) => {
+  const handleBuyNow = async (isInitialBlock = false, isBlockComplete = false) => {
     try {
       if (isProcessingPayment) return;
-      setIsProcessingPayment(true);
-      const data = await initiatePayment(bookIds, selectedAddressId!);
+      if (isInitialBlock) {
+        setIsProcessingPayment(2);
+      } else if (isBlockComplete) {
+        setIsProcessingPayment(3);
+      } else {
+        setIsProcessingPayment(1);
+      }
+      if (cartData.id === null) {
+        return;
+      }
+      if (isInitialBlock && cartData.unpaidBlockedCartId === null) {
+        return;
+      }
+      if (isBlockComplete && cartData.paidBlockedCartId === null) {
+        return;
+      }
+      const data = await initiatePayment({
+        cartId: cartData.id,
+        addressId: selectedAddressId ?? undefined,
+        coupon: appliedCoupon ?? undefined,
+        ...(isInitialBlock && {
+          isInitialBlock,
+          cartId: cartData.unpaidBlockedCartId ?? 0,
+        }),
+        ...(isBlockComplete && {
+          isBlockComplete,
+          cartId: cartData.paidBlockedCartId ?? 0,
+        }),
+      });
       if (!data.id) throw new Error("Order not created");
 
       if (!window.Razorpay) {
         const script = document.createElement("script");
         script.src = "https://checkout.razorpay.com/v1/checkout.js";
         script.async = true;
-        script.onload = () => openRazorpay(data);
+        script.onload = () => openRazorpay(data, isInitialBlock, isBlockComplete);
         script.onerror = () => {
           toast.error("Razorpay SDK failed to load.");
         };
         document.body.appendChild(script);
       } else {
-        openRazorpay(data);
+        openRazorpay(data, isInitialBlock, isBlockComplete);
       }
     } catch (err) {
       console.error("❌ Payment initiation error:", err);
       toast.error("❌ Payment failed. Try again.");
-      setIsProcessingPayment(false);
+      setIsProcessingPayment(0);
     }
   };
 
-  const openRazorpay = (data: PaymentInitiationResponse) => {
+  const handleApplyCoupon = async () => {
+    if (!discountCode) return;
+    setIsApplying(true);
+  
+    try {
+      const token = localStorage.getItem("token") ?? "";
+      const priceDetails = (await fetchPriceDetails(token, {
+        cartId: cartData.id!,
+        coupon: discountCode,
+      })) ?? {
+        cartPrice: 0,
+        discountAmount: 0,
+        deliveryCharge: 0,
+        finalPrice: 0,
+      };
+
+      setAppliedCoupon(discountCode);
+      setDiscountCode("");
+      setSubtotal(priceDetails.cartPrice);
+      setShipping(priceDetails.deliveryCharge);
+      setDiscount(priceDetails.discountAmount);
+      setTotal(priceDetails.finalPrice);
+  
+    } catch (error) {
+      console.error("Error applying coupon:", error);
+    } finally {
+      setIsApplying(false);
+    }
+  };
+  
+  const handleRemoveCoupon = async () => {
+    setAppliedCoupon(null);
+    setIsApplying(true);
+    try {
+      const token = localStorage.getItem("token") ?? "";
+      const priceDetails = (await fetchPriceDetails(token, {
+        cartId: cartData.id!,
+      })) ?? {
+        cartPrice: 0,
+        discountAmount: 0,
+        deliveryCharge: 0,
+        finalPrice: 0,
+      };
+
+      setAppliedCoupon(null);
+      setDiscountCode("");
+      setSubtotal(priceDetails.cartPrice);
+      setShipping(priceDetails.deliveryCharge);
+      setDiscount(priceDetails.discountAmount);
+      setTotal(priceDetails.finalPrice);
+  
+    } catch (error) {
+      console.error("Error applying coupon:", error);
+    } finally {
+      setIsApplying(false);
+    }
+  };
+  
+
+  const openRazorpay = (data: PaymentInitiationResponse, isInitialBlock: boolean, isBlockComplete: boolean) => {
     const options: RazorpayOptions = {
       key: data.razorpayKeyId,
       amount: data.amount_due,
@@ -147,7 +304,22 @@ const Index = () => {
       handler: async function () {
         try {
           setShowSuccessModal(true);
-          await markPaymentAsSuccessful(readyToCheckout.map((book) => book.id));
+          if (isInitialBlock) {
+            if (cartData.unpaidBlockedCartId === null) {
+              return;
+            }
+            await markBlockingPaymentAsSuccessful(cartData.unpaidBlockedCartId);
+          } else if (isBlockComplete) {
+            if (cartData.paidBlockedCartId === null) {
+              return;
+            }
+            await markBlockingCompletePaymentAsSuccessful(cartData.paidBlockedCartId, selectedAddressId!);
+          } else {
+            if (cartData.id === null) {
+              return;
+            }
+            await markPaymentAsSuccessful(cartData.id, selectedAddressId!, appliedCoupon ?? undefined);
+          }
         } catch (err) {
           console.error("Post-payment processing failed:", err);
           toast.error("Something went wrong after payment.");
@@ -159,7 +331,7 @@ const Index = () => {
       modal: {
         ondismiss: function () {
           toast.error("❌ Payment popup closed.");
-          setIsProcessingPayment(false);
+          setIsProcessingPayment(0);
         },
       },
     };
@@ -181,10 +353,43 @@ const Index = () => {
       selectedAddressId,
       readyToCheckout,
     );
-    handleBuyNow(readyToCheckout.map((book) => book.id));
+    handleBuyNow();
+  };
+  const handleBlockingPayment = async () => {
+    if (unpaidBlockedBooks.length === 0) {
+      toast.error("Please add items to your cart before proceeding to checkout.");
+      return;
+    }
+    console.log(
+      "Blocking payment initialised",
+    );
+    handleBuyNow(true);
+  };
+  const handleCompleteBlockPayment = async () => {
+    if (paidBlockedBooks.length === 0) {
+      toast.error("Please add items to your cart before proceeding to checkout.");
+      return;
+    }
+    if (selectedAddressId === null) {
+      toast.error("Please select a shipping address before proceeding to checkout.");
+      return;
+    }
+    console.log(
+      "Completing blocked payment",
+      selectedAddressId,
+    );
+    handleBuyNow(false, true);
   };
   const countries = Object.values(IAddressCountryEnum);
-  return (
+  return isLoading ? (
+    <div className="absolute top-0 left-0 w-full h-full pointer-events-none w-full bg-white">
+      <div className="floating-shape absolute w-48 h-48 bg-pink-100 rounded-full opacity-60 mix-blend-multiply top-20 left-20 animate-float" />
+      <div className="floating-shape absolute w-48 h-48 bg-pink-100 rounded-full opacity-60 mix-blend-multiply bottom-20 left-50 animate-float" />
+      <div className="floating-shape absolute w-64 h-64 bg-purple-100 rounded-full opacity-40 mix-blend-multiply top-40 right-32 animate-float delay-500" />
+      <div className="floating-shape absolute w-32 h-32 bg-blue-100 rounded-full opacity-60 mix-blend-multiply bottom-20 left-1/3 animate-float delay-1000" />
+      <LoadingSpinner />
+    </div>
+  ) : (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden text-sm text-[#22223b]">
       {/* Animated background elements */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
@@ -354,6 +559,163 @@ const Index = () => {
                   </div>
                 )}
               </motion.div>
+              {/* Finish Pending Order */}
+              {paidBlockedBooks.length > 0 && (
+                <motion.div variants={itemVariants} className="space-y-4 mt-8">
+                  <h2 className="text-xl font-semibold text-slate-700">
+                    Finish Pending Order
+                  </h2>
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                    <p className="text-sm text-emerald-700 mb-3">
+                      You have a pending payment for these books. Complete payment to get them shipped to your address.
+                    </p>
+                    <p className="text-sm text-emerald-700 mb-3">
+                      **A delivery charge of Rs. 100 will be applied to the total cart price.
+                    </p>
+
+                    <div className="space-y-4">
+                      {paidBlockedBooks.map((book) => (
+                        <div key={book.id} className="flex gap-3 items-center">
+                          <div className="w-16 h-16 bg-slate-100 rounded-md overflow-hidden">
+                            <img
+                              src={
+                                book.bookMedia.filter((e) => e.type === "image")[0]
+                                  ?.metadata?.s3_url || "/placeholder-book.jpg"
+                              }
+                              alt={book.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-slate-800">{book.name}</h4>
+                            <p className="text-sm text-slate-500">Rs. {book.price.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={handleCompleteBlockPayment}
+                      className="mt-4 w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center justify-center gap-2"
+                      disabled={isProcessingPayment > 0}
+                    >
+                      {isProcessingPayment === 3 && (
+                        <svg
+                          className="animate-spin h-5 w-5 text-white"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          />
+                        </svg>
+                      )}
+                      {isProcessingPayment === 3 ? "Processing..." : "Complete Payment"}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+
+              {/* Blocked Books */}
+              {unpaidBlockedBooks.length > 0 && (
+                <motion.div variants={itemVariants} className="space-y-4 mt-8">
+                  <h2 className="text-xl font-semibold text-slate-700">
+                    Blocked Books
+                  </h2>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <p className="text-sm text-yellow-700 mb-3">
+                      These books are temporarily reserved for you. Please pay 30% of the amount within 48hrs to permanently reserve them.
+                    </p>
+                    
+                    <div className="space-y-4">
+                      {unpaidBlockedBooks.map((book) => (
+                        <div key={book.id} className="flex gap-3 items-center">
+                          <div className="w-16 h-16 bg-slate-100 rounded-md overflow-hidden">
+                            <img
+                              src={
+                                book.bookMedia.filter((e) => e.type === "image")[0]
+                                  ?.metadata?.s3_url || "/placeholder-book.jpg"
+                              }
+                              alt={book.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-slate-800">{book.name}</h4>
+                            <p className="text-sm text-slate-500">Rs. {book.price.toFixed(2)}</p>
+                          </div>
+                          <button
+                            onClick={() => handleRemoveBlockedBookFromCart(book.id)}
+                            className="text-slate-400 hover:text-red-500 transition-colors"
+                            disabled={removingItemId === book.id}
+                          >
+                            {removingItemId === book.id ? (
+                              <svg
+                                className="animate-spin h-4 w-4 text-red-500"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                />
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8v8z"
+                                />
+                              </svg>
+                            ) : (
+                              <Trash2 size={16} />
+                            )}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <button
+                      onClick={handleBlockingPayment}
+                      className="mt-4 w-full py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg flex items-center justify-center gap-2"
+                      disabled={isProcessingPayment > 0}
+                    >
+                      {isProcessingPayment === 2 && (
+                        <svg
+                          className="animate-spin h-5 w-5 text-white"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          />
+                        </svg>
+                      )}
+                      {isProcessingPayment === 2 ? "Processing..." : "Complete Payment"}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
             </div>
 
             {/* Right Column */}
@@ -427,18 +789,78 @@ const Index = () => {
                   <label className="block text-sm font-medium text-slate-600 mb-2">
                     Discount Code
                   </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={discountCode}
-                      onChange={(e) => setDiscountCode(e.target.value)}
-                      placeholder="Enter code"
-                      className="flex-1 p-3 rounded-lg border w-full border-slate-200 transition-all"
-                    />
-                    <button className="px-6  bg-[#22223b] hover:bg-[#22223b] text-white rounded-lg transition-colors">
-                      Apply
-                    </button>
-                  </div>
+
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">Coupon Applied:</span>
+                        <span className="bg-green-800 text-white px-2 py-0.5 rounded text-sm">
+                          {appliedCoupon}
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleRemoveCoupon}
+                        className="text-sm text-red-500 hover:underline ml-4"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={discountCode}
+                        onChange={(e) => setDiscountCode(e.target.value)}
+                        placeholder="Enter code"
+                        disabled={!!appliedCoupon}
+                        className="flex-1 p-3 rounded-lg border w-full border-slate-200 transition-all disabled:bg-slate-100"
+                      />
+                      <button
+                        onClick={handleApplyCoupon}
+                        disabled={isApplying || !discountCode}
+                        className="px-6 bg-[#22223b] hover:bg-[#22223b] text-white rounded-lg transition-colors flex items-center justify-center disabled:opacity-50"
+                      >
+                        {isApplying ? (
+                          <svg
+                            className="animate-spin h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                            />
+                          </svg>
+                        ) : (
+                          "Apply"
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Success or error messages */}
+                  {/* {couponSuccess && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-green-600 text-sm mt-2"
+                    >
+                      🎉 Coupon applied successfully!
+                    </motion.p>
+                  )}
+                  {couponError && (
+                    <p className="text-red-500 text-sm mt-2">{couponError}</p>
+                  )} */}
                 </motion.div>
 
                 {/* Order Summary */}
@@ -468,8 +890,8 @@ const Index = () => {
                   <button
                     onClick={handlePayment}
                     className="w-full block py-4 bg-[#22223b] hover:bg-[#22223b] hover:bg-black-600 text-lg text-white font-semibold rounded-lg transition-all transform hover:scale-[1.02] text-center flex items-center justify-center gap-2"
-                    disabled={isProcessingPayment}>
-                    {isProcessingPayment && (
+                    disabled={isProcessingPayment > 0}>
+                    {isProcessingPayment === 1 && (
                       <svg
                         className="animate-spin h-5 w-5 text-white"
                         viewBox="0 0 24 24">
@@ -486,7 +908,7 @@ const Index = () => {
                           d="M4 12a8 8 0 018-8v8z"></path>
                       </svg>
                     )}
-                    {isProcessingPayment ? "Processing..." : "Secure Checkout"}
+                    {isProcessingPayment === 1 ? "Processing..." : "Secure Checkout"}
                   </button>
                   <div className="mt-4 flex items-center justify-center gap-2 text-slate-500">
                     <Lock size={16} />

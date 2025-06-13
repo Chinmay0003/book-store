@@ -11,6 +11,8 @@ export default function Navbar() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const user = useAuthStore((s) => s.user);
   const cart = useCartStore((s) => s.cart);
+  const unpaidBlockedCart = useCartStore((s) => s.unpaidBlockedCart);
+  const paidBlockedCart = useCartStore((s) => s.paidBlockedCart);
   const handleSignIn = useAuthStore((s) => s.handleSignIn);
   const handleSignOut = useAuthStore((s) => s.handleSignOut);
 

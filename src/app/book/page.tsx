@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Coins,
+  Lock,
   Layers,
   Minus,
   ShoppingCart,
@@ -87,6 +88,23 @@ const BookDetailsPage = () => {
     setIsAddingToCart(true);
     try {
       await addToCart(bookId);
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
+  const handleBlockBook = async (bookId: number) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = redirectToSignin();
+      return;
+    }
+
+    setIsAddingToCart(true);
+    try {
+      addToCart(bookId, true);
     } catch (err) {
       console.error("Error adding to cart:", err);
     } finally {
@@ -262,7 +280,7 @@ const BookDetailsPage = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 mt-6">
               {cart.includes(book.id) ? (
                 <>
                   {/* Remove from Cart */}
@@ -301,6 +319,16 @@ const BookDetailsPage = () => {
                     )}
                   </button>
 
+                  {/* Block Book */}
+                  <button
+                    onClick={() =>
+                      handleBlockBook(book.id).then(() => router.push("/cart"))
+                    }
+                    className="py-3 px-4 bg-emerald-500 text-white rounded-md hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 hover:shadow-md">
+                    <Lock className="h-5 w-5" />
+                    Block book
+                  </button>
+                  
                   {/* Go to Cart */}
                   <Link
                     href="/cart"
@@ -346,6 +374,16 @@ const BookDetailsPage = () => {
                     ) : (
                       "Add to cart"
                     )}
+                  </button>
+
+                  {/* Block Book */}
+                  <button
+                    onClick={() =>
+                      handleBlockBook(book.id).then(() => router.push("/cart"))
+                    }
+                    className="py-3 px-4 bg-emerald-500 text-white rounded-md hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 hover:shadow-md">
+                    <Lock className="h-5 w-5" />
+                    Block book
                   </button>
 
                   {/* Buy Now */}

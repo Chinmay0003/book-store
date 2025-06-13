@@ -26,7 +26,7 @@ export default function Home() {
   const { books, setBooks } = useBookStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [user, setUser] = useState<User | null>(null);
-  const { cart, setCart, initializeCart } = useCartStore();
+  const { cart, setCart, setUnpaidBlockedCart, initializeCart } = useCartStore();
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const booksPerPage = 8;
@@ -64,12 +64,14 @@ export default function Home() {
         console.log("User data:", userData);
 
         // Always replace cart with server cart — do NOT merge to avoid duplicates
-        const cartBooks = await fetchActiveCart(token);
+        const cartBooks = (await fetchActiveCart(token));
         if (cartBooks) {
-          const updatedCart = cartBooks
+          const updatedCart = cartBooks.books
             .filter((book) => book.isSold === false)
             .map((book) => book.id);
           setCart(updatedCart);
+          const updatedBlockedCart = (cartBooks.unpaidBlockedCart ?? []).map(e=>e.id);
+          setUnpaidBlockedCart(updatedBlockedCart);
         } else {
           setCart([]);
         }
@@ -83,7 +85,6 @@ export default function Home() {
 
   const filteredBooks = books
     .filter((book) => book.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
   const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
 
