@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import BookCard from "@/components/ui/BookCard";
 import { IGetAllBooksResponse } from "@/lib/books/types";
 import {
@@ -105,15 +106,15 @@ export default function BookGrid({
 
   const bookCategories: Record<string, { img: string; description: string }> = {
     Playful: {
-      img: require("../../../public/playful.jpg"),
+      img: "/playful.jpg",
       description: "Books that inspire creativity and imagination.",
     },
     "School Going": {
-      img: require("../../../public/schoolGoing.jpg"),
+      img: "/schoolGoing.jpg",
       description: "Books that support school curricula and learning.",
     },
     Toddler: {
-      img: require("../../../public/toddler.jpg"),
+      img: "/toddler.jpg",
       description: "Books for the youngest readers, filled with fun and discovery.",
     },
   };
@@ -146,8 +147,18 @@ export default function BookGrid({
           {/* Search Input */}
           <div className="relative flex-grow">
             <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="w-5 h-5">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
+                />
               </svg>
             </div>
             <input
@@ -167,9 +178,21 @@ export default function BookGrid({
               className="w-full pl-10 pr-10 py-2 rounded-full shadow-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-base"
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                  className="w-5 h-5">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             )}
@@ -197,10 +220,17 @@ export default function BookGrid({
                             <LoadingSpinner size="h-8 w-8" />
                           </div>
                         )}
-                        <div className={`flex items-center gap-4 ${loadingBookId === book.id ? "opacity-50" : ""}`}>
-                          {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
+                        <div
+                          className={`flex items-center gap-4 ${
+                            loadingBookId === book.id ? "opacity-50" : ""
+                          }`}>
+                          {book.bookMedia.filter((e) => e.type === "image").length >
+                          0 ? (
                             <img
-                              src={book.bookMedia.filter((e) => e.type === "image")[0].metadata.s3_url}
+                              src={
+                                book.bookMedia.filter((e) => e.type === "image")[0]
+                                  .metadata.s3_url
+                              }
                               className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
                             />
                           ) : (
@@ -223,8 +253,7 @@ export default function BookGrid({
           {/* Filter Toggle Button */}
           <button
             onClick={() => setShowFilters((prev) => !prev)}
-            className="p-3 rounded-full shadow-md border border-gray-200 bg-white"
-          >
+            className="p-3 rounded-full shadow-md border border-gray-200 bg-white">
             <FunnelIcon className="w-5 h-5 text-blue-600" />
           </button>
         </div>
@@ -233,8 +262,18 @@ export default function BookGrid({
       {/* --- DESKTOP SEARCH --- */}
       <div className="hidden md:block relative w-full max-w-md md:max-w-xl mb-8">
         <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            className="w-5 h-5">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
+            />
           </svg>
         </div>
         <input
@@ -254,10 +293,22 @@ export default function BookGrid({
           className="w-full pl-10 pr-10 py-2 md:pl-12 md:pr-12 md:py-3 rounded-full shadow-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-base md:text-lg"
         />
         {searchQuery && (
-          <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-all duration-200 group">
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-all duration-200 group">
             <div className="absolute -inset-1 rounded-full bg-gray-100 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5 relative z-10">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+              className="w-5 h-5 relative z-10">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         )}
@@ -284,10 +335,16 @@ export default function BookGrid({
                         <LoadingSpinner size="h-8 w-8" />
                       </div>
                     )}
-                    <div className={`flex items-center gap-4 ${loadingBookId === book.id ? "opacity-50" : ""}`}>
+                    <div
+                      className={`flex items-center gap-4 ${
+                        loadingBookId === book.id ? "opacity-50" : ""
+                      }`}>
                       {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
                         <img
-                          src={book.bookMedia.filter((e) => e.type === "image")[0].metadata.s3_url}
+                          src={
+                            book.bookMedia.filter((e) => e.type === "image")[0].metadata
+                              .s3_url
+                          }
                           className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
                         />
                       ) : (
@@ -310,26 +367,38 @@ export default function BookGrid({
 
       {/* --- MOBILE FILTERS (conditionally rendered) --- */}
       {showFilters && (
-        <div className="md:hidden w-full mb-8">
-          <div className="w-full overflow-x-auto custom-scrollbar">
-            <div className="inline-flex flex-nowrap gap-4 px-4 py-2">
-              {Object.keys(bookCategories).map((category) => (
-                <div
-                  key={category}
-                  className="transform transition-all duration-300 hover:scale-105 relative min-w-[220px] max-w-[240px] scroll-snap-align-start"
-                  onClick={() => handleCategoryClick(category)}
-                >
-                  {loadingCategory === category && (
-                    <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
-                      <LoadingSpinner size="h-12 w-12" />
-                    </div>
-                  )}
-                  <div className={`bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)] ${loadingCategory === category ? "opacity-50" : ""}`}>
-                    <BookCategory category={category} img={bookCategories[category].img} />
+        <div className="md:hidden w-full mb-4 px-1">
+          <div className="flex flex-row justify-between items-center">
+            {Object.keys(bookCategories).map((category) => (
+              <div
+                key={category}
+                className="w-[31%] transform transition-all duration-150 relative"
+                onClick={() => handleCategoryClick(category)}>
+                {loadingCategory === category && (
+                  <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-md">
+                    <LoadingSpinner size="h-4 w-4" />
                   </div>
+                )}
+                <div
+                  className={`bg-white rounded-md p-1 border border-gray-100 shadow-sm ${
+                    loadingCategory === category ? "opacity-50" : ""
+                  }`}>
+                  <div className="aspect-square w-full relative overflow-hidden rounded">
+                    <Image
+                      src={bookCategories[category].img}
+                      alt={category}
+                      fill
+                      objectFit="cover"
+                      className="object-cover transition-opacity duration-300 group-hover:opacity-60"
+                      priority
+                    />
+                  </div>
+                  <p className="text-[10px] font-medium text-gray-700 mt-1 truncate">
+                    {category}
+                  </p>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -341,14 +410,12 @@ export default function BookGrid({
             <FunnelIcon className="w-6 h-6 text-blue-600" />
             Filter by Age group
           </h2>
-          <div className="w-full overflow-x-auto custom-scrollbar sm:flex sm:justify-center sm:overflow-visible scroll-snap-x mandatory scroll-pl-4">
-            <div
-              className="inline-flex flex-nowrap gap-8 px-4 py-2 sm:grid sm:w-auto sm:grid-cols-2 sm:gap-16 sm:px-0 md:grid-cols-3 lg:grid-cols-3"
-              style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
+          <div className="w-full flex justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               {Object.keys(bookCategories).map((category: string) => (
                 <div
                   key={category}
-                  className="transform transition-all duration-300 hover:scale-105 relative min-w-[220px] max-w-[240px] sm:min-w-[260px] sm:max-w-[280px] scroll-snap-align-start"
+                  className="transform transition-all duration-300 hover:scale-105 relative w-[280px]"
                   onClick={() => handleCategoryClick(category)}>
                   {loadingCategory === category && (
                     <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
@@ -394,10 +461,7 @@ export default function BookGrid({
               className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 w-full py-2 px-1 md:px-8"
               style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}>
               {(handlePageChangeProp ? books : filteredBooks)
-                .slice(
-                  (currentPage - 1) * booksPerPage,
-                  currentPage * booksPerPage,
-                )
+                .slice((currentPage - 1) * booksPerPage, currentPage * booksPerPage)
                 .map((book) => (
                   <Link href={`/book?id=${book.id}`} key={book.id}>
                     <div

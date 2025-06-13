@@ -117,34 +117,9 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Center: Desktop Nav */}
-          <div className="hidden md:flex text-black">
-            {user ? (
-              <div className="flex gap-6 text-[#23395d] font-medium text-lg items-center">
-                <Link
-                  href="/contact"
-                  className="px-4 py-2 hover:text-blue-600 transition-colors">
-                  Contact Us
-                </Link>
-              </div>
-            ) : (
-              <div className="flex gap-6 text-[#23395d] font-medium text-lg">
-                <Link
-                  href="/"
-                  className="px-4 py-2 hover:text-blue-600 transition-colors">
-                  HOME
-                </Link>
-                <Link
-                  href="/contact"
-                  className="px-4 py-2 hover:text-blue-600 transition-colors">
-                  Contact Us
-                </Link>
-              </div>
-            )}
-          </div>
-
           {/* Right side: Actions */}
           <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex gap-6 text-[#23395d] font-medium text-lg"></div>
             {user ? (
               <div className="hidden md:flex items-center gap-4 text-[#23395d] font-medium text-lg">
                 <button
@@ -162,6 +137,16 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="hidden md:flex items-center gap-4">
+                <Link
+                  href="/"
+                  className="cursor-pointer flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-100 transition">
+                  HOME
+                </Link>
+                <Link
+                  href="/contact"
+                  className="cursor-pointer flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-100 transition">
+                  Contact Us
+                </Link>
                 <button
                   onClick={handleSignIn}
                   className="cursor-pointer flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-100 transition">
@@ -205,7 +190,7 @@ export default function Navbar() {
       {/* Overlay for Mobile Nav */}
       {mobileNavOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-40 z-[1250] md:hidden"
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm md:hidden z-1200"
           onClick={() => setMobileNavOpen(false)}></div>
       )}
 
