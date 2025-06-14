@@ -52,28 +52,28 @@ export default function Features() {
 
   return (
     <>
-      <section className="relative text-center py-24 bg-white overflow-hidden">
+      <section className="relative text-center py-16 md:py-24 bg-white overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] h-48 bg-blue-50/30 rounded-full blur-3xl" />
         </div>
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-3 tracking-tight">
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-800 mb-3 tracking-tight">
             Why Kids & Parents Love Us!
           </h2>
-          <p className="text-lg md:text-xl text-gray-600 mb-14 font-medium">
+          <p className="text-base md:text-xl text-gray-600 mb-12 md:mb-14 font-medium">
             Trusted by families and educators for joyful, safe, and inspiring reading
             journeys.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
             {features.map((feature, index) => (
               <div
                 key={feature.title}
-                className="bg-white border border-blue-100 rounded-xl shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)] transition-transform duration-300 p-10 hover:scale-105 flex flex-col items-center fade-in-up"
+                className="bg-white border border-blue-100 rounded-xl shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)] transition-transform duration-300 p-8 md:p-10 hover:scale-105 flex flex-col items-center fade-in-up"
                 style={{ animationDelay: `${index * 120}ms` }}>
                 <div className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 shadow-md mb-6">
                   <span className="text-4xl md:text-5xl">{feature.icon}</span>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2 tracking-tight">
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2 tracking-tight">
                   {feature.title}
                 </h3>
                 <p className="text-gray-600 text-base leading-relaxed">
@@ -86,12 +86,12 @@ export default function Features() {
       </section>
 
       {/* Reviews Section */}
-      <section className="relative py-20 bg-white overflow-hidden">
+      <section className="relative py-16 md:py-20 bg-white overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute bottom-0 right-1/2 translate-x-1/2 w-[70vw] h-40 bg-blue-50/30 rounded-full blur-2xl" />
         </div>
         <div className="max-w-5xl mx-auto px-6 relative z-10">
-          <h3 className="text-3xl md:text-4xl font-bold text-[#23395d] mb-12 text-center tracking-tight">
+          <h3 className="text-2xl md:text-4xl font-bold text-[#23395d] mb-10 md:mb-12 text-center tracking-tight">
             What Our Customers Say
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

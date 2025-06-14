@@ -9,8 +9,18 @@ import { ensureBooksLoaded } from "@/lib/books/bookLoader";
 // Components
 import Hero from "@/components/home/Hero";
 import BookGrid from "@/components/books/BookGrid";
-import Features from "@/components/home/Features";
-import Footer from "@/components/layout/Footer";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import dynamic from "next/dynamic";
+
+const Features = dynamic(() => import("@/components/home/Features"));
+const Footer = dynamic(() => import("@/components/layout/Footer"));
+
+function getPaginationDots(current: number, total: number) {
+  if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 3) return [1, 2, 3, "...", total];
+  if (current >= total - 2) return [1, "...", total - 2, total - 1, total];
+  return [1, "...", current, "...", total];
+}
 
 export default function Home() {
   const { books, setBooks } = useBookStore();
@@ -18,6 +28,8 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const { cart, setCart, setUnpaidBlockedCart, initializeCart } = useCartStore();
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const booksPerPage = 8;
 
   // Handle token in URL for initial login
   useEffect(() => {
@@ -73,20 +85,35 @@ export default function Home() {
 
   const filteredBooks = books
     .filter((book) => book.name.toLowerCase().includes(searchTerm.toLowerCase()))
+
+  const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
+
+  const handlePageChange = (direction: "next" | "prev") => {
+    setCurrentPage((prev) =>
+      direction === "next" ? Math.min(prev + 1, totalPages) : Math.max(prev - 1, 1),
+    );
+  };
+
+  const handleDotClick = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
     <div className="w-full bg-white">
       <Hero />
 
       <div className="flex justify-center items-center min-h-[400px] mt-[-2rem]">
         {isLoading ? (
-          <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-            <div className="floating-shape absolute w-48 h-48 bg-pink-100 rounded-full opacity-60 mix-blend-multiply top-20 left-20 animate-float" />
-            <div className="floating-shape absolute w-48 h-48 bg-pink-100 rounded-full opacity-60 mix-blend-multiply bottom-20 left-50 animate-float" />
-            <div className="floating-shape absolute w-64 h-64 bg-purple-100 rounded-full opacity-40 mix-blend-multiply top-40 right-32 animate-float delay-500" />
-            <div className="floating-shape absolute w-32 h-32 bg-blue-100 rounded-full opacity-60 mix-blend-multiply bottom-20 left-1/3 animate-float delay-1000" />
-          </div>
+          <LoadingSpinner />
         ) : (
-          <BookGrid books={filteredBooks} cart={cart} />
+          <BookGrid
+            books={filteredBooks}
+            cart={cart}
+            totalPages={totalPages}
+            currentPage={currentPage}
+            handlePageChange={handlePageChange}
+            handleDotClick={handleDotClick}
+          />
         )}
       </div>
       <Features />

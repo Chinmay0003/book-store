@@ -10,6 +10,8 @@ import { IBookData } from "@/lib/books/types";
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import Navbar from "@/components/home/Navbar";
 import Link from "next/link";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+
 function getPaginationDots(current: number, total: number) {
   // Show max 5 dots: [1, ..., current-1, current, current+1, ..., total]
   if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
@@ -52,10 +54,23 @@ const SubcategoryPage = () => {
   const [books, setBooks] = useState<IBookData[]>([]);
   const [loading, setLoading] = useState(true);
   const [priceFilter, setPriceFilter] = useState<string>("");
-
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [loadingBookId, setLoadingBookId] = useState<number | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
   const filteredBooks = books.filter((book) =>
     book.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+  useEffect(() => {
+    if (searchQuery.trim() !== "") {
+      setIsSearching(true);
+      const timer = setTimeout(() => {
+        setIsSearching(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      setIsSearching(false);
+    }
+  }, [searchQuery]);
   useEffect(() => {
     async function getBooks() {
       setLoading(true);
@@ -115,6 +130,11 @@ const SubcategoryPage = () => {
     setCurrentPage(1);
   }, [searchQuery]);
   const router = useRouter();
+  const handleBookSelect = (bookId: number) => {
+    setLoadingBookId(bookId);
+    router.push(`/book?id=${bookId}`);
+    setShowDropdown(false);
+  };
   return (
     <div className="min-h-screen bg-white overflow-hidden relative">
       <Navbar />
@@ -132,7 +152,7 @@ const SubcategoryPage = () => {
           Our Premium Book Collection
         </h2>
         {/* Search Bar */}
-        <div className="relative w-full max-w-xl mb-8">
+        <div className="relative w-full max-w-xl mb-8 z-1000">
           {/* Search Icon */}
           <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
             <svg
@@ -165,7 +185,7 @@ const SubcategoryPage = () => {
               }
             }}
             onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-            className="w-full pl-12 pr-12 py-3 rounded-full shadow-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-lg"
+            className="w-full pl-12 pr-12 py-3 rounded-full shadow-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-lg z-1000"
           />
 
           {/* Clear Button */}
@@ -192,58 +212,77 @@ const SubcategoryPage = () => {
 
           {/* Dropdown */}
           {showDropdown && searchQuery.trim() !== "" && (
-            <div className="absolute z-999 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-md max-h-64 overflow-y-auto">
-              {filteredBooks.map((book, index) => (
-                <div key={book.id}>
-                  <div
-                    className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150"
-                    onMouseDown={() => {
-                      router.push(`/book?id=${book.id}`);
-                      setShowDropdown(false); // Close the dropdown on click
-                    }}>
-                    {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
-                      <img
-                        src={
-                          book.bookMedia.filter((e) => e.type === "image")[0].metadata
-                            .s3_url
-                        }
-                        // alt={book.name}
-                        className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-md bg-gray-100 border border-gray-200"></div>
-                    )}
-                    <span>{book.name}</span>
-                  </div>
-                  {index < books.length - 1 && (
-                    <hr className="mx-4 border-t border-gray-200" />
-                  )}
+            <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-md max-h-64 overflow-y-auto">
+              {isSearching ? (
+                <div className="flex justify-center items-center py-4">
+                  <LoadingSpinner size="h-8 w-8" />
                 </div>
-              ))}
-              {books.length === 0 && (
+              ) : filteredBooks.length > 0 ? (
+                filteredBooks.map((book, index) => (
+                  <div key={book.id}>
+                    <div
+                      className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150"
+                      onClick={() => handleBookSelect(book.id)}
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleBookSelect(book.id);
+                        }
+                      }}>
+                      {loadingBookId === book.id && (
+                        <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
+                          <LoadingSpinner size="h-8 w-8" />
+                        </div>
+                      )}
+                      <div
+                        className={`flex items-center gap-4 ${
+                          loadingBookId === book.id ? "opacity-50" : ""
+                        }`}>
+                        {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
+                          <img
+                            src={
+                              book.bookMedia.filter((e) => e.type === "image")[0]
+                                .metadata.s3_url
+                            }
+                            // alt={book.name}
+                            className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-md bg-gray-100 border border-gray-200"></div>
+                        )}
+                        <span>{book.name}</span>
+                      </div>
+                    </div>
+                    {index < filteredBooks.length - 1 && (
+                      <hr className="mx-4 border-t border-gray-200" />
+                    )}
+                  </div>
+                ))
+              ) : (
                 <div className="px-4 py-3 text-gray-500">No matching books found</div>
               )}
             </div>
           )}
         </div>
 
-        <div className="w-full flex-col items-center px-10">
+        <div className="w-full flex-col items-center">
           <h2 className="text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm mt-5 mb-5">
             Product by category {subcategory}
           </h2>
 
           {/* Price Filter Dropdown */}
-          <div className="flex items-center justify-center gap-3 mb-10 mt-10">
+          <div className="flex items-center justify-center gap-3 mb-10 mt-10 z-999 relative">
             <FilterIcon className="w-5 h-5 text-blue-500" />
             <span className="text-gray-700 font-semibold">Filter by Price:</span>
-            <div className="flex gap-2">
+            {/* Desktop buttons */}
+            <div className="hidden md:flex flex-wrap justify-center gap-2">
               {PRICE_RANGES.map((range) => (
                 <button
                   key={range.value}
                   onClick={() =>
                     setPriceFilter(priceFilter === range.value ? "" : range.value)
                   }
-                  className={`px-5 py-3 rounded-full text-md font-semibold border shadow-sm transition-all duration-200 ${
+                  className={`px-4 py-2 md:px-5 md:py-3 rounded-full text-sm md:text-md font-semibold border shadow-sm transition-all duration-200 ${
                     priceFilter === range.value
                       ? "bg-black text-white border-black"
                       : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
@@ -252,14 +291,69 @@ const SubcategoryPage = () => {
                 </button>
               ))}
             </div>
+            {/* Mobile dropdown */}
+            <div className="relative md:hidden">
+              <button
+                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                className="px-2 py-2 rounded-full text-sm font-semibold border shadow-sm bg-white text-gray-800 border-gray-300 hover:bg-gray-100 w-48 text-left flex justify-between items-center">
+                <span>
+                  {PRICE_RANGES.find((r) => r.value === priceFilter)?.label ||
+                    "All Prices"}
+                </span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${
+                    showFilterDropdown ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              {showFilterDropdown && (
+                <div className="absolute z-20 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-md">
+                  <button
+                    onClick={() => {
+                      setPriceFilter("");
+                      setShowFilterDropdown(false);
+                    }}
+                    className={`block w-full text-left px-4 py-2 text-sm ${
+                      !priceFilter
+                        ? "bg-blue-500 text-white"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}>
+                    All Prices
+                  </button>
+                  {PRICE_RANGES.map((range) => (
+                    <button
+                      key={range.value}
+                      onClick={() => {
+                        setPriceFilter(range.value);
+                        setShowFilterDropdown(false);
+                      }}
+                      className={`block w-full text-left px-4 py-2 text-sm ${
+                        priceFilter === range.value
+                          ? "bg-blue-500 text-white"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}>
+                      {range.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          <div className="relative w-full flex flex-col items-center">
+          <div className="w-full flex-col justify-start px-2 sm:px-2 md:px-10">
             <div className="flex items-center justify-center max-w-12xl">
               {/* Left Navigation Button */}
               <button
                 onClick={() => handlePageChange("prev")}
                 disabled={currentPage === 1 || isAnimating}
-                className={`p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+                className={`hidden md:flex p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                   currentPage === 1 || isAnimating
                     ? "opacity-50 cursor-not-allowed"
                     : ""
@@ -283,7 +377,7 @@ const SubcategoryPage = () => {
               ) : (
                 <div
                   ref={carouselRef}
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full py-2 px-2 md:px-8"
+                  className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6 w-full py-2 md:px-8"
                   style={{
                     scrollBehavior: "smooth",
                     WebkitOverflowScrolling: "touch",
@@ -293,11 +387,20 @@ const SubcategoryPage = () => {
                     .map((book) => (
                       <div
                         key={book.id}
-                        className="transform transition-all duration-300 hover:scale-105"
-                        style={{ minWidth: "260px", maxWidth: "280px" }}>
+                        className="transform transition-all duration-300 hover:scale-105">
                         <Link href={`/book?id=${book.id}`} key={book.id}>
-                          <div className="bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)]">
-                            <BookCard book={book} cart={carts} />
+                          <div
+                            className="bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)] relative"
+                            onClick={() => setLoadingBookId(book.id)}>
+                            {loadingBookId === book.id && (
+                              <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
+                                <LoadingSpinner size="h-12 w-12" />
+                              </div>
+                            )}
+                            <div
+                              className={loadingBookId === book.id ? "opacity-50" : ""}>
+                              <BookCard book={book} cart={carts} />
+                            </div>
                           </div>
                         </Link>
                       </div>
@@ -309,7 +412,7 @@ const SubcategoryPage = () => {
               <button
                 onClick={() => handlePageChange("next")}
                 disabled={currentPage === totalPages || isAnimating}
-                className={`p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+                className={`hidden md:flex p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                   currentPage === totalPages || isAnimating
                     ? "opacity-50 cursor-not-allowed"
                     : ""
@@ -321,7 +424,7 @@ const SubcategoryPage = () => {
           </div>
 
           {/* Pagination Indicator */}
-          <div className="flex items-center justify-center mt-8 space-x-2">
+          <div className="hidden md:flex items-center justify-center mt-8 space-x-2">
             {getPaginationDots(currentPage, totalPages).map((dot, idx) =>
               dot === "..." ? (
                 <span key={"ellipsis-" + idx} className="w-4 text-center text-gray-400">
@@ -341,6 +444,40 @@ const SubcategoryPage = () => {
               ),
             )}
           </div>
+          {totalPages > 1 && (
+            <div className="flex md:hidden items-center justify-center mt-8 space-x-2">
+              <button
+                onClick={() => handlePageChange("prev")}
+                disabled={currentPage === 1 || isAnimating}
+                className="px-4 py-2 rounded-full font-semibold border shadow-sm transition-all duration-200 bg-black text-white border-black hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed">
+                Prev
+              </button>
+              {getPaginationDots(currentPage, totalPages).map((dot, idx) =>
+                dot === "..." ? (
+                  <span key={"ellipsis-mobile-" + idx} className="w-4 text-center text-gray-400">
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={"dot-mobile-" + idx}
+                    onClick={() => handleDotClick(dot as number)}
+                    className={`w-8 h-8 rounded-full transition-all duration-300 focus:outline-none ${
+                      currentPage === dot
+                        ? "bg-blue-600 text-white scale-110"
+                        : "bg-gray-200 hover:bg-gray-300"
+                    }`}>
+                    {dot}
+                  </button>
+                ),
+              )}
+              <button
+                onClick={() => handlePageChange("next")}
+                disabled={currentPage === totalPages || isAnimating}
+                className="px-4 py-2 rounded-full font-semibold border shadow-sm transition-all duration-200 bg-black text-white border-black hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed">
+                Next
+              </button>
+            </div>
+          )}
         </div>
 
         <style jsx global>{`

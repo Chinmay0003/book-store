@@ -14,6 +14,7 @@ import {
 import Navbar from "@/components/home/Navbar";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 // Helper for pagination dots (if needed)
 function getPaginationDots(current: number, total: number) {
@@ -60,6 +61,8 @@ export default function SearchPage() {
   const [priceFilter, setPriceFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [loadingBookId, setLoadingBookId] = useState<number | null>(null);
 
   useEffect(() => {
     async function getBooks() {
@@ -139,10 +142,11 @@ export default function SearchPage() {
           </span>
           <span className="text-xl text-gray-700">for "{query}"</span>
         </div>
-        <div className="flex items-center justify-center gap-3 mb-10 mt-10">
+        <div className="flex items-center justify-center gap-3 mb-10 mt-10 z-999">
           <FilterIcon className="w-5 h-5 text-blue-500" />
           <span className="text-gray-700 font-semibold">Filter by Price:</span>
-          <div className="flex gap-2">
+          {/* Desktop buttons */}
+          <div className="hidden md:flex flex-wrap justify-center gap-2">
             {PRICE_RANGES.map((range) => (
               <button
                 key={range.value}
@@ -158,13 +162,68 @@ export default function SearchPage() {
               </button>
             ))}
           </div>
+          {/* Mobile dropdown */}
+          <div className="relative md:hidden">
+            <button
+              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+              className="px-4 py-2 rounded-full text-sm font-semibold border shadow-sm bg-white text-gray-800 border-gray-300 hover:bg-gray-100 w-48 text-left flex justify-between items-center">
+              <span>
+                {PRICE_RANGES.find((r) => r.value === priceFilter)?.label ||
+                  "All Prices"}
+              </span>
+              <svg
+                className={`w-4 h-4 transition-transform ${
+                  showFilterDropdown ? "rotate-180" : ""
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            {showFilterDropdown && (
+              <div className="absolute z-20 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-md">
+                <button
+                  onClick={() => {
+                    setPriceFilter("");
+                    setShowFilterDropdown(false);
+                  }}
+                  className={`block w-full text-left px-4 py-2 text-sm ${
+                    !priceFilter
+                      ? "bg-blue-500 text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}>
+                  All Prices
+                </button>
+                {PRICE_RANGES.map((range) => (
+                  <button
+                    key={range.value}
+                    onClick={() => {
+                      setPriceFilter(range.value);
+                      setShowFilterDropdown(false);
+                    }}
+                    className={`block w-full text-left px-4 py-2 text-sm ${
+                      priceFilter === range.value
+                        ? "bg-blue-500 text-white"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}>
+                    {range.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         <div className="relative w-full flex flex-col items-center">
           <div className="flex items-center justify-center max-w-12xl">
             <button
               onClick={() => handlePageChange("prev")}
               disabled={currentPage === 1 || isAnimating}
-              className={`p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+              className={`hidden md:flex p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                 currentPage === 1 || isAnimating ? "opacity-50 cursor-not-allowed" : ""
               }`}
               aria-label="Previous page">
@@ -182,7 +241,7 @@ export default function SearchPage() {
               </div>
             ) : (
               <div
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 px-10 py-2"
+                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 px-4 md:px-10 py-2"
                 style={{
                   scrollBehavior: "smooth",
                   WebkitOverflowScrolling: "touch",
@@ -193,8 +252,19 @@ export default function SearchPage() {
                     <Link href={`/book?id=${book.id}`} key={book.id}>
                       <div
                         key={book.id}
-                        className="transition-transform hover:-translate-y-1 hover:shadow-xl">
-                        <BookCard book={book} cart={cart} />
+                        className="transition-transform hover:-translate-y-1 hover:shadow-xl relative"
+                        onClick={() => setLoadingBookId(book.id)}>
+                        {loadingBookId === book.id && (
+                          <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
+                            <LoadingSpinner size="h-12 w-12" />
+                          </div>
+                        )}
+                        <div
+                          className={
+                            loadingBookId === book.id ? "opacity-50" : ""
+                          }>
+                          <BookCard book={book} cart={cart} />
+                        </div>
                       </div>
                     </Link>
                   ))}
@@ -204,7 +274,7 @@ export default function SearchPage() {
             <button
               onClick={() => handlePageChange("next")}
               disabled={currentPage === totalPages || isAnimating}
-              className={`p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+              className={`hidden md:flex p-2 md:p-3 rounded-full shadow-md border border-gray-200 transition-all duration-300 bg-black text-white hover:bg-gray-800 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                 currentPage === totalPages || isAnimating
                   ? "opacity-50 cursor-not-allowed"
                   : ""
@@ -214,7 +284,7 @@ export default function SearchPage() {
             </button>
           </div>
         </div>
-        <div className="flex items-center justify-center mt-8 space-x-2">
+        <div className="hidden md:flex items-center justify-center mt-8 space-x-2">
           {getPaginationDots(currentPage, totalPages).map((dot, idx) =>
             dot === "..." ? (
               <span key={"ellipsis-" + idx} className="w-4 text-center text-gray-400">
@@ -234,6 +304,40 @@ export default function SearchPage() {
             ),
           )}
         </div>
+        {totalPages > 1 && (
+          <div className="flex md:hidden items-center justify-center mt-8 space-x-2">
+            <button
+              onClick={() => handlePageChange("prev")}
+              disabled={currentPage === 1 || isAnimating}
+              className="px-4 py-2 rounded-full font-semibold border shadow-sm transition-all duration-200 bg-black text-white border-black hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed">
+              Prev
+            </button>
+            {getPaginationDots(currentPage, totalPages).map((dot, idx) =>
+              dot === "..." ? (
+                <span key={"ellipsis-mobile-" + idx} className="w-4 text-center text-gray-400">
+                  …
+                </span>
+              ) : (
+                <button
+                  key={"dot-mobile-" + idx}
+                  onClick={() => handleDotClick(dot as number)}
+                  className={`w-8 h-8 rounded-full transition-all duration-300 focus:outline-none ${
+                    currentPage === dot
+                      ? "bg-blue-600 text-white scale-110"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}>
+                  {dot}
+                </button>
+              ),
+            )}
+            <button
+              onClick={() => handlePageChange("next")}
+              disabled={currentPage === totalPages || isAnimating}
+              className="px-4 py-2 rounded-full font-semibold border shadow-sm transition-all duration-200 bg-black text-white border-black hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed">
+              Next
+            </button>
+          </div>
+        )}
         <style jsx global>{`
           .custom-scrollbar::-webkit-scrollbar {
             display: none;

@@ -51,6 +51,7 @@ const BookDetailsPage = () => {
     }
 
     const fetchData = async () => {
+      setLoading(true);
       try {
         const data = await getBookById(bookId);
         if (!data) {
@@ -58,12 +59,6 @@ const BookDetailsPage = () => {
           return;
         }
         setBook(data);
-
-        // Ensure cart is loaded from server if not already
-        const token = localStorage.getItem("token");
-        if (token && cart.length === 0) {
-          await initializeCart();
-        }
       } catch (error) {
         console.error("Error fetching data:", error);
         router.replace("/");
@@ -73,8 +68,15 @@ const BookDetailsPage = () => {
     };
 
     fetchData();
-    console.log(cart);
-  }, [bookId, router, cart.length, initializeCart]);
+  }, [bookId, router]);
+
+  useEffect(() => {
+    // Ensure cart is loaded from server if not already
+    const token = localStorage.getItem("token");
+    if (token && cart.length === 0) {
+      initializeCart();
+    }
+  }, [cart.length, initializeCart]);
 
   const handleAddToCart = async (bookId: number) => {
     const token = localStorage.getItem("token");
@@ -85,7 +87,7 @@ const BookDetailsPage = () => {
 
     setIsAddingToCart(true);
     try {
-      addToCart(bookId);
+      await addToCart(bookId);
     } catch (err) {
       console.error("Error adding to cart:", err);
     } finally {
@@ -119,7 +121,7 @@ const BookDetailsPage = () => {
 
     setIsRemovingFromCart(true);
     try {
-      removeFromCart(bookId);
+      await removeFromCart(bookId);
     } catch (err) {
       console.error("Error removing from cart:", err);
     } finally {
@@ -129,7 +131,7 @@ const BookDetailsPage = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-white overflow-hidden relative">
+      <div className="min-h-screen bg-white overflow-hidden relative flex flex-col">
         {/* Floating Background Shapes */}
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
           <div className="floating-shape absolute w-48 h-48 bg-pink-100 rounded-full opacity-60 mix-blend-multiply top-20 left-20 animate-float" />
@@ -138,7 +140,9 @@ const BookDetailsPage = () => {
           <div className="floating-shape absolute w-32 h-32 bg-blue-100 rounded-full opacity-60 mix-blend-multiply bottom-20 left-1/3 animate-float delay-1000" />
         </div>
         <Navbar />
-        <LoadingSpinner />
+        <div className="flex-grow flex items-center justify-center">
+          <LoadingSpinner />
+        </div>
       </div>
     );
 

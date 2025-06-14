@@ -27,7 +27,7 @@ export default function BookCard({ book, cart }: BookCardProps) {
 
   return (
     <>
-      <div className="bg-white border border-blue-100 rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 flex flex-col items-center p-0 mx-auto min-h-[370px] max-w-xs hover:scale-105 overflow-hidden relative">
+      <div className="bg-white border border-blue-100 rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 flex flex-col items-center p-0 mx-auto min-h-[320px] sm:min-h-[340px] md:min-h-[370px] w-full hover:scale-105 overflow-hidden relative">
         {/* New Badge */}
         {isNew && (
           <div className="absolute top-2 right-2 z-20 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded shadow-lg">
@@ -36,7 +36,7 @@ export default function BookCard({ book, cart }: BookCardProps) {
         )}
         {/* Clickable Preview */}
         <div
-          className="relative w-full h-60 group cursor-pointer"
+          className="relative w-full h-52 md:h-60 group cursor-pointer"
           onMouseEnter={() => {
             const video = videoRefs.current[book.id];
             if (video) {
@@ -69,6 +69,7 @@ export default function BookCard({ book, cart }: BookCardProps) {
                 loop
                 playsInline
                 className="absolute w-full h-full object-cover rounded-t-xl"
+                preload="none"
               />
               <Image
                 src={
@@ -79,7 +80,6 @@ export default function BookCard({ book, cart }: BookCardProps) {
                 fill
                 className="object-cover transition-opacity duration-300 group-hover:opacity-0 rounded-t-xl"
                 sizes="(max-width: 768px) 100vw, 33vw"
-                priority
               />
             </>
           ) : (
@@ -92,19 +92,18 @@ export default function BookCard({ book, cart }: BookCardProps) {
               fill
               className="object-cover rounded-t-xl"
               sizes="(max-width: 768px) 100vw, 33vw"
-              priority
             />
           )}
         </div>
 
         {/* Book Info */}
         {/* Book Info Section */}
-        <div className="flex flex-col gap-4 w-full mb-4 px-4 mt-6">
+        <div className="flex flex-col gap-3 md:gap-4 w-full mb-4 px-3 md:px-4 mt-4 md:mt-6">
           {/* Book Title */}
           <div className="flex items-center gap-3 w-full">
             <Bookmark className="w-5 h-5 text-blue-600" />
             <span
-              className="text-base text-gray-800 font-medium truncate"
+              className="text-sm md:text-base text-gray-800 font-medium truncate"
               title={book.name}>
               {book.name}
             </span>
@@ -114,7 +113,7 @@ export default function BookCard({ book, cart }: BookCardProps) {
           <div className="flex items-center gap-3 w-full">
             <Layers className="w-5 h-5 text-purple-600" />
             <span
-              className="text-base text-gray-800 font-medium truncate"
+              className="text-sm md:text-base text-gray-800 font-medium truncate"
               title={book.type}>
               {book.type}
             </span>
@@ -123,7 +122,7 @@ export default function BookCard({ book, cart }: BookCardProps) {
           {/* Book Price */}
           <div className="flex items-center gap-3 w-full">
             <IndianRupee className="w-5 h-5 text-green-600" />
-            <span className="text-lg font-bold text-gray-900">
+            <span className="text-base md:text-lg font-bold text-gray-900">
               ₹{book.price.toFixed(2)}
             </span>
           </div>
@@ -132,7 +131,7 @@ export default function BookCard({ book, cart }: BookCardProps) {
           <div className="flex items-center gap-3 w-full">
             <BadgeCheck className="w-5 h-5 text-yellow-600" />
             <span
-              className="text-base text-gray-800 font-medium truncate"
+              className="text-sm md:text-base text-gray-800 font-medium truncate"
               title={book.quality}>
               {book.quality}
             </span>
