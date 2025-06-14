@@ -182,6 +182,7 @@ const BookDetailsPage = () => {
                     loop
                     muted
                     playsInline
+                    controls
                     ref={(video) => {
                       if (video) {
                         video.playbackRate = 2.0;
@@ -280,124 +281,126 @@ const BookDetailsPage = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 mt-6">
-              {cart.includes(book.id) ? (
-                <>
-                  {/* Remove from Cart */}
-                  <button
-                    onClick={() => handleRemoveFromCart(book.id)}
-                    className={`py-3 px-4 border rounded-md transition-all flex items-center justify-center gap-2 hover:shadow-md ${
-                      isRemovingFromCart
-                        ? "border-red-400 text-red-600 bg-red-50"
-                        : "border-gray-300 text-black hover:bg-gray-50"
-                    }`}
-                    disabled={isRemovingFromCart}>
-                    <Minus className="h-5 w-5" />
-                    {isRemovingFromCart ? (
-                      <span className="flex items-center gap-2">
-                        <svg
-                          className="animate-spin h-4 w-4 mr-1 text-red-600"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24">
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8v8z"></path>
-                        </svg>
-                        Removing...
-                      </span>
-                    ) : (
-                      "Remove from cart"
-                    )}
-                  </button>
+            {!book.isSold && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 mt-6">
+                {cart.includes(book.id) ? (
+                  <>
+                    {/* Remove from Cart */}
+                    <button
+                      onClick={() => handleRemoveFromCart(book.id)}
+                      className={`py-3 px-4 border rounded-md transition-all flex items-center justify-center gap-2 hover:shadow-md ${
+                        isRemovingFromCart
+                          ? "border-red-400 text-red-600 bg-red-50"
+                          : "border-gray-300 text-black hover:bg-gray-50"
+                      }`}
+                      disabled={isRemovingFromCart}>
+                      <Minus className="h-5 w-5" />
+                      {isRemovingFromCart ? (
+                        <span className="flex items-center gap-2">
+                          <svg
+                            className="animate-spin h-4 w-4 mr-1 text-red-600"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24">
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v8z"></path>
+                          </svg>
+                          Removing...
+                        </span>
+                      ) : (
+                        "Remove from cart"
+                      )}
+                    </button>
 
-                  {/* Block Book */}
-                  <button
-                    onClick={() =>
-                      handleBlockBook(book.id).then(() => router.push("/cart"))
-                    }
-                    className="py-3 px-4 bg-emerald-500 text-white rounded-md hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 hover:shadow-md">
-                    <Lock className="h-5 w-5" />
-                    Block book
-                  </button>
-                  
-                  {/* Go to Cart */}
-                  <Link
-                    href="/cart"
-                    prefetch
-                    className="py-3 px-4 bg-[#22223b] text-white rounded-md hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 hover:shadow-md">
-                    <ShoppingCart className="h-5 w-5" />
-                    Go to cart
-                  </Link>
-                </>
-              ) : (
-                <>
-                  {/* Add to Cart */}
-                  <button
-                    onClick={() => handleAddToCart(book.id)}
-                    className={`py-3 px-4 border rounded-md transition-all flex items-center justify-center gap-2 hover:shadow-md ${
-                      isAddingToCart
-                        ? "border-blue-400 text-blue-600 bg-blue-50"
-                        : "border-gray-300 text-black hover:bg-gray-50"
-                    }`}
-                    disabled={isAddingToCart}>
-                    <ShoppingCart className="h-5 w-5" />
-                    {isAddingToCart ? (
-                      <span className="flex items-center gap-2">
-                        <svg
-                          className="animate-spin h-4 w-4 mr-1 text-blue-600"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24">
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8v8z"></path>
-                        </svg>
-                        Adding...
-                      </span>
-                    ) : (
-                      "Add to cart"
-                    )}
-                  </button>
+                    {/* Block Book */}
+                    <button
+                      onClick={() =>
+                        handleBlockBook(book.id).then(() => router.push("/cart"))
+                      }
+                      className="py-3 px-4 bg-emerald-500 text-white rounded-md hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 hover:shadow-md">
+                      <Lock className="h-5 w-5" />
+                      Block book
+                    </button>
+                    
+                    {/* Go to Cart */}
+                    <Link
+                      href="/cart"
+                      prefetch
+                      className="py-3 px-4 bg-[#22223b] text-white rounded-md hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 hover:shadow-md">
+                      <ShoppingCart className="h-5 w-5" />
+                      Go to cart
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    {/* Add to Cart */}
+                    <button
+                      onClick={() => handleAddToCart(book.id)}
+                      className={`py-3 px-4 border rounded-md transition-all flex items-center justify-center gap-2 hover:shadow-md ${
+                        isAddingToCart
+                          ? "border-blue-400 text-blue-600 bg-blue-50"
+                          : "border-gray-300 text-black hover:bg-gray-50"
+                      }`}
+                      disabled={isAddingToCart}>
+                      <ShoppingCart className="h-5 w-5" />
+                      {isAddingToCart ? (
+                        <span className="flex items-center gap-2">
+                          <svg
+                            className="animate-spin h-4 w-4 mr-1 text-blue-600"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24">
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v8z"></path>
+                          </svg>
+                          Adding...
+                        </span>
+                      ) : (
+                        "Add to cart"
+                      )}
+                    </button>
 
-                  {/* Block Book */}
-                  <button
-                    onClick={() =>
-                      handleBlockBook(book.id).then(() => router.push("/cart"))
-                    }
-                    className="py-3 px-4 bg-emerald-500 text-white rounded-md hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 hover:shadow-md">
-                    <Lock className="h-5 w-5" />
-                    Block book
-                  </button>
+                    {/* Block Book */}
+                    <button
+                      onClick={() =>
+                        handleBlockBook(book.id).then(() => router.push("/cart"))
+                      }
+                      className="py-3 px-4 bg-emerald-500 text-white rounded-md hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 hover:shadow-md">
+                      <Lock className="h-5 w-5" />
+                      Block book
+                    </button>
 
-                  {/* Buy Now */}
-                  <button
-                    onClick={() =>
-                      handleAddToCart(book.id).then(() => router.push("/cart"))
-                    }
-                    className="py-3 px-4 bg-[#22223b] text-white rounded-md hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 hover:shadow-md">
-                    <Zap className="h-5 w-5" />
-                    Buy it now
-                  </button>
-                </>
-              )}
-            </div>
+                    {/* Buy Now */}
+                    <button
+                      onClick={() =>
+                        handleAddToCart(book.id).then(() => router.push("/cart"))
+                      }
+                      className="py-3 px-4 bg-[#22223b] text-white rounded-md hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 hover:shadow-md">
+                      <Zap className="h-5 w-5" />
+                      Buy it now
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
             <p className="text-md text-[#22223b] mt-6 leading-relaxed">
               "Explore this captivating book with rich content and engaging
               storytelling. Perfect for readers of all ages looking for an immersive
