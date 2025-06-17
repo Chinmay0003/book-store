@@ -81,6 +81,18 @@ const Index = () => {
         m.fetchActiveCart(token),
       )).books;
       cartData.setCart(latestCart ? latestCart.map((e) => e.id) : []);
+      const priceDetails = (await fetchPriceDetails(token, {
+        cartId: cartData.id!,
+      })) ?? {
+        cartPrice: 0,
+        discountAmount: 0,
+        deliveryCharge: 0,
+        finalPrice: 0,
+      };
+      setSubtotal(priceDetails.cartPrice);
+      setShipping(priceDetails.deliveryCharge);
+      setDiscount(priceDetails.discountAmount);
+      setTotal(priceDetails.finalPrice);
       toast.success("Book removed from cart");
     } catch (error) {
       toast.error("Error removing book from cart");
