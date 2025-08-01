@@ -78,7 +78,7 @@ const SubcategoryPage = () => {
       try {
         const filteredBooks = allBooks.filter(
           (book) =>
-            book.category === subcategory && filterBooksByPrice(book, priceFilter),
+            (book.category === subcategory || String(book.contentCategory).includes(subcategory)) && filterBooksByPrice(book, priceFilter),
         );
         setBooks(filteredBooks);
       } catch (e) {

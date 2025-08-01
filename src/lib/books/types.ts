@@ -1,4 +1,4 @@
-import { BookCategory, BookQuality, BookType } from "@/lib/books/enums";
+import { BookCategory, BookQuality, BookType, ContentCategory } from "@/lib/books/enums";
 import { User } from "@/types/user";
 
 export interface IBookMediaResponse {
@@ -19,8 +19,15 @@ export interface IBookData {
   price: number;
   quality: BookQuality;
   type: BookType;
+  contentCategory: ContentCategory;
   bookMedia: IBookMediaResponse[];
+  bookMetadata: IBookMetadata;
   updatedAt: string;
+}
+
+export interface IBookMetadata {
+  summary: string | null;
+  defaultKeywords: string[] | null;
 }
 
 export interface IGetAllBooksResponse {

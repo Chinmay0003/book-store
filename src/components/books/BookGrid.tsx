@@ -12,6 +12,7 @@ import {
 import BookCategory from "../ui/BookCategory";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "../ui/LoadingSpinner";
+import SearchBar from "@/components/home/SearchBar";
 
 interface BookGridProps {
   books: IGetAllBooksResponse["bookData"];
@@ -45,6 +46,7 @@ export default function BookGrid({
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [isAISearchEnabled, setIsAISearchEnabled] = useState(true);
   const booksPerPage = 8; // Changed to 8 books per page (2 rows of 4)
   const carouselRef = useRef<HTMLDivElement>(null);
   const filteredBooks = books.filter((book) =>
@@ -105,6 +107,22 @@ export default function BookGrid({
     });
 
   const bookCategories: Record<string, { img: string; description: string }> = {
+    "Lift and Flap": {
+      img: "/liftAndFlap.jpg",
+      description: "Books that inspire creativity and imagination.",
+    },
+    "Phonics": {
+      img: "/phonics.jpg",
+      description: "Books that inspire creativity and imagination.",
+    },
+    Toddler: {
+      img: "/toddler.jpg",
+      description: "Books for the youngest readers, filled with fun and discovery.",
+    },
+    "Touch and Feel": {
+      img: "/touchAndFeel.jpg",
+      description: "Books that inspire creativity and imagination.",
+    },
     Playful: {
       img: "/playful.jpg",
       description: "Books that inspire creativity and imagination.",
@@ -112,10 +130,6 @@ export default function BookGrid({
     "School Going": {
       img: "/schoolGoing.jpg",
       description: "Books that support school curricula and learning.",
-    },
-    Toddler: {
-      img: "/toddler.jpg",
-      description: "Books for the youngest readers, filled with fun and discovery.",
     },
   };
   useEffect(() => {
@@ -141,282 +155,39 @@ export default function BookGrid({
         Our Premium Book Collection
       </h2>
 
-      {/* --- MOBILE SEARCH & FILTER --- */}
-      <div className="md:hidden w-full px-4 mb-6">
-        <div className="flex items-center gap-2">
-          {/* Search Input */}
-          <div className="relative flex-grow">
-            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-                className="w-5 h-5">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
-                />
-              </svg>
-            </div>
-            <input
-              type="text"
-              placeholder="Search or type a book name..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setShowDropdown(true);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  router.push(`/search/${encodeURIComponent(searchQuery)}`);
-                }
-              }}
-              onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-              className="w-full pl-10 pr-10 py-2 rounded-full shadow-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-base"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  stroke="currentColor"
-                  className="w-5 h-5">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            )}
-            {/* Dropdown for mobile */}
-            {showDropdown && searchQuery.trim() !== "" && (
-              <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-md max-h-64 overflow-y-auto">
-                {isSearching ? (
-                  <div className="flex justify-center items-center py-4">
-                    <LoadingSpinner size="h-8 w-8" />
-                  </div>
-                ) : filteredBooks.length > 0 ? (
-                  filteredBooks.map((book, index) => (
-                    <div key={book.id}>
-                      <div
-                        className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150"
-                        onClick={() => handleBookSelect(book.id)}
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            handleBookSelect(book.id);
-                          }
-                        }}>
-                        {loadingBookId === book.id && (
-                          <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
-                            <LoadingSpinner size="h-8 w-8" />
-                          </div>
-                        )}
-                        <div
-                          className={`flex items-center gap-4 ${
-                            loadingBookId === book.id ? "opacity-50" : ""
-                          }`}>
-                          {book.bookMedia.filter((e) => e.type === "image").length >
-                          0 ? (
-                            <img
-                              src={
-                                book.bookMedia.filter((e) => e.type === "image")[0]
-                                  .metadata.s3_url
-                              }
-                              className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
-                            />
-                          ) : (
-                            <div className="w-12 h-12 rounded-md bg-gray-100 border border-gray-200"></div>
-                          )}
-                          <span>{book.name}</span>
-                        </div>
-                      </div>
-                      {index < filteredBooks.length - 1 && (
-                        <hr className="mx-4 border-t border-gray-200" />
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <div className="px-4 py-3 text-gray-500">No matching books found</div>
-                )}
-              </div>
-            )}
-          </div>
-          {/* Filter Toggle Button */}
-          <button
-            onClick={() => setShowFilters((prev) => !prev)}
-            className="p-3 rounded-full shadow-md border border-gray-200 bg-white">
-            <FunnelIcon className="w-5 h-5 text-blue-600" />
-          </button>
-        </div>
-      </div>
-
-      {/* --- DESKTOP SEARCH --- */}
-      <div className="hidden md:block relative w-full max-w-md md:max-w-xl mb-8">
-        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-            stroke="currentColor"
-            className="w-5 h-5">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
-            />
-          </svg>
-        </div>
-        <input
-          type="text"
-          placeholder="Search or type a book name..."
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            setShowDropdown(true);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              router.push(`/search/${encodeURIComponent(searchQuery)}`);
-            }
-          }}
-          onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-          className="w-full pl-10 pr-10 py-2 md:pl-12 md:pr-12 md:py-3 rounded-full shadow-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-base md:text-lg"
+      {/* --- DESKTOP SEARCH & FILTER --- */}
+      <div className="relative w-full max-w-2xl mb-2 md:mb-10 px-2 sm:px-4">
+        <SearchBar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          isAISearchEnabled={isAISearchEnabled}
+          setIsAISearchEnabled={setIsAISearchEnabled}
+          showDropdown={showDropdown}
+          setShowDropdown={setShowDropdown}
+          filteredBooks={filteredBooks}
+          isSearching={isSearching}
+          loadingBookId={loadingBookId}
+          handleBookSelect={handleBookSelect}
         />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery("")}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-all duration-200 group">
-            <div className="absolute -inset-1 rounded-full bg-gray-100 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-              className="w-5 h-5 relative z-10">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        )}
-        {showDropdown && searchQuery.trim() !== "" && (
-          <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-md max-h-64 overflow-y-auto">
-            {isSearching ? (
-              <div className="flex justify-center items-center py-4">
-                <LoadingSpinner size="h-8 w-8" />
-              </div>
-            ) : filteredBooks.length > 0 ? (
-              filteredBooks.map((book, index) => (
-                <div key={book.id}>
-                  <div
-                    className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 cursor-pointer text-left text-gray-700 font-semibold transition-all duration-150"
-                    onClick={() => handleBookSelect(book.id)}
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleBookSelect(book.id);
-                      }
-                    }}>
-                    {loadingBookId === book.id && (
-                      <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
-                        <LoadingSpinner size="h-8 w-8" />
-                      </div>
-                    )}
-                    <div
-                      className={`flex items-center gap-4 ${
-                        loadingBookId === book.id ? "opacity-50" : ""
-                      }`}>
-                      {book.bookMedia.filter((e) => e.type === "image").length > 0 ? (
-                        <img
-                          src={
-                            book.bookMedia.filter((e) => e.type === "image")[0].metadata
-                              .s3_url
-                          }
-                          className="w-12 h-12 object-cover rounded-md shadow-sm border border-gray-200"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-md bg-gray-100 border border-gray-200"></div>
-                      )}
-                      <span>{book.name}</span>
-                    </div>
-                  </div>
-                  {index < filteredBooks.length - 1 && (
-                    <hr className="mx-4 border-t border-gray-200" />
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="px-4 py-3 text-gray-500">No matching books found</div>
-            )}
-          </div>
-        )}
       </div>
-
-      {/* --- MOBILE FILTERS (conditionally rendered) --- */}
-      {showFilters && (
-        <div className="md:hidden w-full mb-4 px-1">
-          <div className="flex flex-row justify-between items-center">
-            {Object.keys(bookCategories).map((category) => (
-              <div
-                key={category}
-                className="w-[31%] transform transition-all duration-150 relative"
-                onClick={() => handleCategoryClick(category)}>
-                {loadingCategory === category && (
-                  <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-md">
-                    <LoadingSpinner size="h-4 w-4" />
-                  </div>
-                )}
-                <div
-                  className={`bg-white rounded-md p-1 border border-gray-100 shadow-sm ${
-                    loadingCategory === category ? "opacity-50" : ""
-                  }`}>
-                  <div className="aspect-square w-full relative overflow-hidden rounded">
-                    <Image
-                      src={bookCategories[category].img}
-                      alt={category}
-                      fill
-                      objectFit="cover"
-                      className="object-cover transition-opacity duration-300 group-hover:opacity-60"
-                      priority
-                    />
-                  </div>
-                  <p className="text-[10px] font-medium text-gray-700 mt-1 truncate">
-                    {category}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* --- DESKTOP FILTERS --- */}
-      <div className="hidden md:flex w-full flex-col justify-start py-10 px-4 md:px-10">
+      <div className="flex w-full flex-col justify-start py-10 px-4 md:px-10">
         <div className="w-full flex flex-col items-center gap-2 max-w-10xl">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex items-center justify-start mb-5 mt-5 gap-2">
             <FunnelIcon className="w-6 h-6 text-blue-600" />
-            Filter by Age group
+            Filter by Category
           </h2>
-          <div className="w-full flex justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+
+          {/* Horizontally centered scrollable container */}
+          <div className="w-full overflow-x-auto px-4">
+            <div className="inline-flex gap-8 mx-auto">
               {Object.keys(bookCategories).map((category: string) => (
                 <div
                   key={category}
-                  className="transform transition-all duration-300 hover:scale-105 relative w-[280px]"
-                  onClick={() => handleCategoryClick(category)}>
+                  className="shrink-0 transform transition-all duration-300 hover:scale-105 relative w-[280px]"
+                  onClick={() => handleCategoryClick(category)}
+                >
                   {loadingCategory === category && (
                     <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10 rounded-xl">
                       <LoadingSpinner size="h-12 w-12" />
@@ -425,7 +196,8 @@ export default function BookGrid({
                   <div
                     className={`bg-white rounded-xl border-blue-100 shadow-[0_4px_32px_0_rgba(34,211,238,0.15)] hover:shadow-[0_8px_40px_0_rgba(34,211,238,0.25)] ${
                       loadingCategory === category ? "opacity-50" : ""
-                    }`}>
+                    }`}
+                  >
                     <BookCategory
                       category={category}
                       img={bookCategories[category].img}
@@ -437,6 +209,8 @@ export default function BookGrid({
           </div>
         </div>
       </div>
+
+      {/* --- TOP PICKS --- */}
       <div className="w-full flex-col justify-start px-2 sm:px-4 md:px-10">
         <div className="relative w-full flex flex-col items-center gap-2">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-sm flex items-center justify-center max-w-10xl mb-5 mt-5 gap-2">

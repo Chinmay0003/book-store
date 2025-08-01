@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   BadgeCheck,
+  BookOpen,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -401,11 +402,22 @@ const BookDetailsPage = () => {
                 )}
               </div>
             )}
-            <p className="text-md text-[#22223b] mt-6 leading-relaxed">
-              "Explore this captivating book with rich content and engaging
-              storytelling. Perfect for readers of all ages looking for an immersive
-              experience."
-            </p>
+            {book.bookMetadata?.summary ? (
+              <div className="mt-8 p-6 bg-yellow-50 border border-yellow-200 rounded-xl shadow-sm">
+                <h2 className="text-xl font-semibold text-yellow-900 flex items-center gap-2 mb-3">
+                  <BookOpen className="h-5 w-5 text-yellow-700" />
+                  Summary of book
+                </h2>
+                <p className="text-md text-[#444] leading-relaxed whitespace-pre-line">
+                  {book.bookMetadata.summary}
+                </p>
+              </div>
+            ) : (
+              <p className="text-md text-[#22223b] mt-6 leading-relaxed">
+                "Explore this captivating book with rich content and engaging storytelling.
+                Perfect for readers of all ages looking for an immersive experience."
+              </p>
+            )}
             {/* Accordions */}
             <div className="border-t border-gray-200 text-[#22223b] mt-4 pt-4">
               <Accordion type="single" collapsible className="w-full">
