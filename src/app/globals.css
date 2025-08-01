@@ -67,3 +67,53 @@ body {
   opacity: 0;
   transition: opacity 300ms ease-in-out;
 }
+
+@layer components {
+  .flame-border-glow {
+    position: relative;
+    z-index: 1;
+  }
+
+  .flame-border-glow::before {
+    content: "";
+    position: absolute;
+    inset: -6px; /* Border thickness */
+    border-radius: 1.5rem;
+    padding: 6px;
+    box-sizing: border-box;
+    z-index: -1;
+    filter: blur(12px);
+    opacity: 0.9;
+
+    background: linear-gradient(
+      270deg,
+      #f59e0b,
+      #ef4444,
+      #ec4899,
+      #8b5cf6,
+      #0ea5e9,
+      #f59e0b
+    );
+    background-size: 400% 400%;
+    animation: flameFlow 8s linear infinite;
+
+    /* Mask to show only the border */
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: destination-out;
+  }
+
+  @keyframes flameFlow {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 400% 50%;
+    }
+  }
+}

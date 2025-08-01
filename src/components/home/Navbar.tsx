@@ -124,6 +124,11 @@ export default function Navbar() {
             <div className="flex gap-6 text-[#23395d] font-medium text-lg"></div>
             {user ? (
               <div className="hidden md:flex items-center gap-4 text-[#23395d] font-medium text-lg">
+                <Link
+                  href="/contact"
+                  className="cursor-pointer flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-100 transition">
+                  Contact Us
+                </Link>
                 <button
                   onClick={handleSignOut}
                   className="flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-100 transition">

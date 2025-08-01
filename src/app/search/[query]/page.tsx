@@ -15,6 +15,7 @@ import Navbar from "@/components/home/Navbar";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { searchAiBooks } from "@/lib/books/api";
 
 // Helper for pagination dots (if needed)
 function getPaginationDots(current: number, total: number) {
@@ -55,6 +56,8 @@ const filterBooksByPrice = (book: IBookData, filter: string): boolean => {
 export default function SearchPage() {
   const params = useParams<{ query: string }>();
   const query = decodeURIComponent(params.query);
+  const searchParams = useSearchParams();
+  const aiFlag = searchParams.get("ai") === "true";
   const [books, setBooks] = useState<IBookData[]>([]);
   const [loading, setLoading] = useState(true);
   const cart = useCartStore.getState().cart;
@@ -69,11 +72,17 @@ export default function SearchPage() {
       setLoading(true);
       try {
         let allBooks = await ensureBooksLoaded();
-        // Text search
-        const searchWords = query.toLowerCase().split(/\s+/).filter(Boolean);
-        let filtered = allBooks.filter((book: IBookData) =>
-          searchWords.every((word) => book.name.toLowerCase().includes(word)),
-        );
+        let filtered: IBookData[] = [];
+        if (aiFlag) {
+          const aiBooks = await searchAiBooks(query);
+          filtered = aiBooks.bookData;
+        } else {
+          // Text search
+          const searchWords = query.toLowerCase().split(/\s+/).filter(Boolean);
+          filtered = allBooks.filter((book: IBookData) =>
+            searchWords.every((word) => book.name.toLowerCase().includes(word)),
+          );
+        }
         // Price filter
         filtered = filtered.filter((book: IBookData) =>
           filterBooksByPrice(book, priceFilter),
@@ -232,7 +241,7 @@ export default function SearchPage() {
             {loading ? (
               <div className="flex flex-col items-center text-gray-500 mt-16">
                 <BookOpenIcon className="h-12 w-12 animate-bounce mb-2 text-blue-400" />
-                <span className="text-lg font-medium">Loading...</span>
+                <span className="text-lg font-medium">{aiFlag ? "AI is finding the best books for you..." : "Loading..."}</span>
               </div>
             ) : books.length === 0 ? (
               <div className="flex flex-col items-center text-gray-500 mt-16">

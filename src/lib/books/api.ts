@@ -22,3 +22,14 @@ export const getBookById = async (id: number): Promise<IBookData | null> => {
     throw error;
   }
 };
+
+export const searchAiBooks = async (query: string) => {
+  try {
+    const res = await axios.post<IGetAllBooksResponse>(`${BACKEND_API}/book/query-filter`, { query });
+    console.log("✅ Books fetched successfully:", res.data);
+    return res.data;
+  } catch (error) {
+    console.error("❌ Error fetching books:", error);
+    throw error;
+  }
+}

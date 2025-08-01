@@ -137,7 +137,7 @@ export default function Hero() {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="w-full py-2">
+        className="w-full py-2 pt-6">
         <div className="text-center text-3xl md:text-6xl font-bold tracking-wide bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 bg-clip-text text-transparent">
           #NoScreenTime
         </div>
