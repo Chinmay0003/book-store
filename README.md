@@ -39,9 +39,10 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ```mermaid
 %%{init: {'theme':'base'}}%%
 xychart-beta
-    title "Sales vs Expenses (Q1–Q3)"
-    x-axis "Sales"
-    y-axis "Expenses"
-    line "Q1" [100, 60]
-    line "Q2" [120, 70]
-    line "Q3" [150, 85]
+    title "Revenue Growth vs Profit Margin"
+    x-axis "Revenue Growth (%)"
+    y-axis "Profit Margin (%)"
+    line "AAPL" [15, 25]
+    line "MSFT" [18, 30]
+    line "GOOGL" [12, 28]
+```
